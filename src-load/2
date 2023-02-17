@@ -150,9 +150,9 @@ def buildWII(WII, iv, fuelCat, indus):
             elif iai == 1: 
                 fuelCat__ = fuelCat_[(fuelCat_['AI']>0  )&(fuelCat_['AI']<=0.9)]
             elif iai == 2: 
-                fuelCat__ = fuelCat_[(fuelCat_['AI']<=0 )                      ]  # to update to pass it to ==0. need PoverA update. 
+                fuelCat__ = fuelCat_[(fuelCat_['AI']==0 )                      ]
 
-            vegCat = (iv-1) + iai
+            vegCat = iv + iai
             bufferDistVegCat_ = bufferDistVegCat[vegCat]
 
             indus_['geometry'] = indus_.geometry.apply(lambda g: g.buffer(bufferDistVegCat_))
@@ -203,25 +203,21 @@ def AIpoly(gdf, ipo, ptdx = 100, dbox = 1000.):
         box = gpd.GeoDataFrame(crs=poly.crs, geometry=[ shapely.geometry.Polygon(zip(boxx,boxy)) ] )
 
         gdf_box = gpd.overlay(gdf_local, box, how = 'intersection', keep_geom_type=False)
-        
-        Abox = (dbox**2)*1.e-4
 
         A    = gdf_box.area.sum()/1.e4   # total area ha of the selected polygon
-        if A > .8*Abox : 
+        if A > (dbox**2)/2/1.e4 : 
             AIpt.append(1)
             break 
-        elif A < .1*Abox : 
-            AIpt.append(0)
         else:
             P    = gdf_box.length.sum() * 1.e-3 # total perimeter km of the selected polygon
-            PoverA = 0.05 #max([0.04,P/A])
+            PoverA = 0.06 #max([0.04,P/A])
             A_unit = ptdx**2 * 1.e-4# ha
             S_unit = PoverA * A_unit*1.e4 #  m   square S_unit = 0.04 A_unit
             Pmax = S_unit * ( A /(A_unit) ) * 1.e-3
             Pmin = 2 * np.pi * np.sqrt(1.e4*A/np.pi) / 1.e3
             AIpt.append( 1 - (P-Pmin)/(Pmax-Pmin) ) #Boegart et al 2002 https://sites.bu.edu/cliveg/files/2013/12/jbogaert02.pdf
 
-            if P>Pmax : print(AIpt[-1], Pmax, P, Pmin, A/Abox, P/A*1.e-1)
+            if P>Pmax : print(AIpt[-1], Pmax, P, P/A*1.e-1)
 
             if AIpt[-1] == 1: break
 
