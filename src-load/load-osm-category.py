@@ -10,17 +10,29 @@ import pyrosm
 import glob
 import shutil
 import warnings
+import importlib 
 
-from countries import countries
+#homebrwed
+import countries as contries_mod
 
 if __name__ == '__main__':
+   
+    continent = 'asia'
+    
+    importlib.reload(contries_mod)
+    from countries import europe, asia
+    
+    if continent == 'europe': 
+        countries_selection = europe
+    elif continent == 'asia': 
+        countries_selection = asia
     
     warnings.filterwarnings("ignore")
 
     flag_industrial     = True
     flag_veg_osm        = False
     
-    indir = '/mnt/dataEstrella/WII/OSM/PerCountry/'
+    indir = '/mnt/dataEstrella/WII/OSM/PerCountry-{:s}/'.format(continent)
     osmfiles = sorted(glob.glob(indir+'*osm.pbf'))
   
     if flag_industrial:
@@ -41,7 +53,7 @@ if __name__ == '__main__':
 
         if flag_industrial:
             
-            outdir = '/mnt/dataEstrella/WII/IndustrialZone/'
+            outdir = '/mnt/dataEstrella/WII/IndustrialZone/{:s}'.format(continent)
            
             nbreTile = len( glob.glob( osmfile.split('-latest')[0]+'*.osm.pbf') )
             if nbreTile > 1: 

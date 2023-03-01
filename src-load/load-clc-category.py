@@ -16,7 +16,7 @@ if __name__ == '__main__':
 
     print('fuel clc')
     indir = '/mnt/dataEstrella/WII/CLC/u2018_clc2018_v2020_20u1_geoPackage/DATA/'
-    outdir = '/mnt/dataEstrella/WII/FuelCategories-CLC/'
+    outdir = '/mnt/dataEstrella/WII/FuelCategories-CLC/europe/'
     fuelCatTag = []
     fuelCatTag.append(['312']) #1
     fuelCatTag.append(['313']) #2

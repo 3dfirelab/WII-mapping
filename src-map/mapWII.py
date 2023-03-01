@@ -16,72 +16,112 @@ warnings.filterwarnings("ignore")
 
 if __name__ == '__main__':
 
+    continent = 'asia'
+
     importlib.reload(tools)
     
-    xminEU,yminEU, xmaxEU,ymaxEU = [-31., 24.505457173625324, 99.52727619009086, 80.51193780175987]
-    
+    if continent == 'europe':
+        xminEU,xmaxEU = 2500000., 7400000.
+        yminEU,ymaxEU = 1400000., 5440568.
+    elif continent == 'asia':
+        xminEU,xmaxEU = 2500000., 7400000.
+        yminEU,ymaxEU = 1400000., 5440568.
+ 
     #borders
-    indir = '/mnt/dataEstrella/WII/Boundaries/NUTS/'
-    borders = gpd.read_file(indir+'NUTS_RG_01M_2021_4326.geojson')
-    borders = borders.to_crs('epsg:3035')
+    indir = '/mnt/dataEstrella/WII/Boundaries/'
+    if continent == 'europe':
+        bordersNUTS = gpd.read_file(indir+'NUTS/NUTS_RG_01M_2021_4326.geojson')
+        bordersNUST = bordersNUTS.to_crs('epsg:3035')
+        extraNUTS = gpd.read_file(indir+'noNUTS.geojson')
+        extraNUST = extraNUTS.to_crs('epsg:3035')
+        bordersNUTSm = pd.concat([bordersNUST,extraNUST])
+    else:
+        bordersNUTSm = None
+
+    landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
+    landNE = landNE.to_crs('epsg:3035')
 
 
     #industrial zone
-    indir = '/mnt/dataEstrella/WII/IndustrialZone/'
+    indir = '/mnt/dataEstrella/WII/IndustrialZone/{:s}/'.format(continent)
     indusFiles = sorted(glob.glob(indir+'*.geojson'))
+    
+    dirout = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
    
+    if os.path.isfile(dirout+'WII.geojon'):
+        print 'load WII ...'
+        WII = gpd.read_file(dirout+'WII.geojon')
 
-    #CLC cat
-    print('load clc ...', end='')
-    sys.stdout.flush()
-    indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/'
-    #idxclc = [1]
-    #print('  *** warning: only load cat 1 ***' )
-    idxclc = range(1,6)
-    fuelCat_all = []
-    for iv in idxclc:
-        fuelCat_ = gpd.read_file(indir+'fuelCategory{:d}.geojson'.format(iv))
-        fuelCat_ = fuelCat_.to_crs('epsg:3035')
-        fuelCat_all.append(fuelCat_)
-    print(' done')
 
-    WII = None
-
-    dirout = '/mnt/dataEstrella/WII/IndustrialZone_level2/'
-    for indusFile in indusFiles:
-        indus = gpd.read_file(indusFile)
-        indus = indus.to_crs('epsg:3035')
-
-        indus['area_ha'] = indus['geometry'].area/ 10**4
-        indus = indus[indus['area_ha']>1]
-        print('{:s} shape'.format(os.path.basename(indusFile)), indus.shape)
-
-        if indus.shape[0]>10:
-            indus['group'] = tools.cluster_shapes_by_distance(indus, 5.e3,)
-        else: 
-            indus['group'] = 0 
-
-        #print('nbre group :',indus['group'].max()+1)
-        #indus['group'] = indus.group.astype(str)
-        #indus.plot(column='group', legend=True)
-        #plt.show()
-        #sys.exit()
-
-        indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/'
-
+    else:
+        #CLC cat
+        print('load clc ...', end='')
+        sys.stdout.flush()
+        indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/{:s}'.format(continent)
+        #idxclc = [1]
+        #print('  *** warning: only load cat 1 ***' )
+        idxclc = range(1,6)
+        fuelCat_all = []
         for iv in idxclc:
-            WII = tools.buildWII(WII, iv, fuelCat_all[iv-1], indus)
+            fuelCat_ = gpd.read_file(indir+'fuelCategory{:d}.geojson'.format(iv))
+            fuelCat_ = fuelCat_.to_crs('epsg:3035')
+            fuelCat_all.append(fuelCat_)
+        print(' done')
+
+        WII = None
+
+        for indusFile in indusFiles:
+            indus = gpd.read_file(indusFile)
+            indus = indus.to_crs('epsg:3035')
+
+            indus['area_ha'] = indus['geometry'].area/ 10**4
+            indus = indus[indus['area_ha']>1]
+            print('{:s} shape'.format(os.path.basename(indusFile)), indus.shape)
+
+            if indus.shape[0]>10:
+                indus['group'] = tools.cluster_shapes_by_distance(indus, 5.e3,)
+            else: 
+                indus['group'] = 0 
+
+            #print('nbre group :',indus['group'].max()+1)
+            #indus['group'] = indus.group.astype(str)
+            #indus.plot(column='group', legend=True)
+            #plt.show()
+            #sys.exit()
+
+            indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/'
+
+            for iv in idxclc:
+                WII = tools.buildWII(WII, iv, fuelCat_all[iv-1], indus, continent)
 
 
-        '''    #print('fueltCat{:d}'.format(iv))
-            key = 'fuelCat{:d}_dist'.format(iv)
-            key2 = 'fuelCat{:d}_idx'.format(iv)
-            indus[key], indus[key2] = tools.dist2FuelCat(indir, fuelCat_all[iv-1], indus)
-
-        indus.to_file(dirout+'_dist.'.join(os.path.basename(indusFile).split('.')), driver="GeoJSON")
-        '''
+        WII.to_file(dirout+'WII.geojon',driver='GeoJSON')
    
-        #sys.exit()
+
+    #plot
+
+    fig = plt.figure(figsize=(10,8))
+    ax = plt.subplot(111)
+    landNE.plot(ax=ax,facecolor='0.9',edgecolor='None')
+    bordersNUTSm[bordersNUTSm['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None')
+
+    WII.plot(ax=ax, facecolor='hotpink', edgecolor='hotpink', linewidth=.2)
+    ax.set_xlim(xminEU,xmaxEU)
+    ax.set_ylim(yminEU,ymaxEU)
+    ax.set_title('Wildand Industrial Interface')
+    fig.savefig(dirout+'WII.png',dpi=200)
+    plt.close(fig)
+
+
+    '''    #print('fueltCat{:d}'.format(iv))
+        key = 'fuelCat{:d}_dist'.format(iv)
+        key2 = 'fuelCat{:d}_idx'.format(iv)
+        indus[key], indus[key2] = tools.dist2FuelCat(indir, fuelCat_all[iv-1], indus)
+
+    indus.to_file(dirout+'_dist.'.join(os.path.basename(indusFile).split('.')), driver="GeoJSON")
+    '''
+
+    #sys.exit()
 
     '''
     ax = plt.subplot(111)

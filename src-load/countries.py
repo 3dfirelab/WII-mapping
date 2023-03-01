@@ -1,4 +1,46 @@
-countries=[
+asia = [
+        ['Afghanistan', 'AFG', None ],
+        ['Armenia', 'ARM', None ],  
+        ['Azerbaijan', 'AZE', None ],  
+        ['Bangladesh', 'BGD', None ],  	
+        ['Bhutan', 'BTN', None ],  	
+        ['Cambodia', 'KHM', None ],  
+        ['China', 'CH1', None ],  
+        ['GCC States', 'KWT,SAU,BHR,QAT,OMN,ARE', None ],  	
+        ['India', 'IND', None ],  	
+        ['Indonesia', 'IDN', None ],  
+        ['Iran', 'IRN', None ],  
+        ['Iraq', 'IRQ', None ],  	
+        ['Israel and Palestine',  'IS1', None ],	
+        ['Japan', 'JPN', None ], 	
+        ['Jordan', 'JOR', None ],	
+        ['Kazakhstan', 'KA1', None ], 	
+        ['Kyrgyzstan', 'KGZ', None ], 	
+        ['Laos', 'LAO', None ], 	
+        ['Lebanon', 'LBN', None ], 	
+        ['Malaysia, Singapore, and Brunei', 'MYS,BRN,SGP', None ], 	
+        ['Maldives', 'MDV', None ], 	
+        ['Mongolia', 'MNG', None ], 	
+        ['Myanmar', 'MMR', None ], 
+        ['Nepal', 'NPL', None ], 	
+        ['North Korea', 'PRK', None ], 	
+        ['Pakistan', 'PAK', None ], 	
+        ['Philippines', 'PHL', None ], 	
+        ['South Korea', 'KOR', None ], 	
+        ['Sri Lanka', 'LKA', None ], 	
+        ['Syria', 'SYR', None ], 	
+        ['Taiwan', 'TWN', None ], 	
+        ['Tajikistan', 'TJK', None ], 	
+        ['Thailand', 'THA', None ], 	
+        ['Turkmenistan', 'TKM', None ], 	
+        ['Uzbekistan', 'UZB', None ], 	
+        ['Vietnam', 'VNM', None ], 	
+        ['Yemen', 'YEM', None ] 	
+       ]
+
+
+
+europe=[
         ['Albania', 'AL', None],	
         ['Andorra', None, None], 	
         ['Azores', 'PT', 'PT2'], 	

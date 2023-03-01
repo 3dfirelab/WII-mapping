@@ -11,6 +11,11 @@ import multiprocessing
 import pdb 
 import warnings
 #warnings.filterwarnings("error")
+import pyproj
+
+#homebrwed
+sys.path.append('../src-load/')
+from load-glc-category import clipped_fuelCat_gdf
 
 ##########################
 def cpu_count():
@@ -128,21 +133,32 @@ def dist2FuelCat(indir,fuelCat, indus):
     return mindist, minPolyIdx
 
 ##########################
-def buildWII(WII, iv, fuelCat, indus):
+def buildWII(WII, iv, fuelCat, indus, continent):
    
     bufferDistVegCat = [2400,1200,800,600,480,400,343]
     bb = 10.e3 
 
     nbregroup = indus['group'].max() +1
+    #print('fuelCat{:d} - nbre group = {:d}'.format(iv,nbregroup))
+    
     for ig in range(0, nbregroup):
-        #print('group {:d}/{:d} ... '.format(ig,nbregroup),end='\r')
+        print('fuelCat{:d} - group {:d}/{:d} ... '.format(iv,ig,nbregroup),end='\r')
+        sys.stdout.flush()
         indus_ = indus.loc[indus['group']==ig]
         #print(indus_.shape)
         xmin, ymin, xmax, ymax = indus_.total_bounds
         
-        fuelCat_ = fuelCat.cx[xmin-bb:xmax+bb, ymin-bb:ymax+bb]
-      
-        fuelCat_  =  add_AI2gdf(fuelCat_,ptdx=100,dbox=1000)
+        if type(fuelCat) is geopandas.geodataframe.GeoDataFrame:
+            fuelCat_ = fuelCat.cx[xmin-bb:xmax+bb, ymin-bb:ymax+bb]
+        else: 
+            indir = '/mnt/dataEstrella/WII/CLC/'
+            outdir = '/mnt/dataEstrella/WII/FuelCategories-CLC/{:s}/'.format(continent)
+            to_latlon = pyproj.Transformer.from_crs(indus_.crs, 'epsg:4326')
+            lowerCorner = to_latlon.transform(xmin-bb, ymin-bb)
+            upperCorner = to_latlon.transform(xmax+bb, ymax+bb)
+
+            fuelCat_ = clipped_fuelCat_gdf(indir, outdir, iv, lowerCorner[0], lowerCorner[1], upperCorner[0], upperCorner[1])
+            fuelCat_  =  add_AI2gdf(fuelCat_,ptdx=100,dbox=1000,PoverA=0.04)
 
         for iai in range(3):
             if iai == 0: 
@@ -172,7 +188,7 @@ def buildWII(WII, iv, fuelCat, indus):
 def star_AIpoly(param):
     return AIpoly(*param)
 
-def AIpoly(gdf, ipo, ptdx = 100, dbox = 1000.):
+def AIpoly(gdf, ipo, ptdx = 100, dbox = 1000., PoverA=0.05):
 
     poly = gdf[ipo:ipo+1]
     
@@ -214,7 +230,7 @@ def AIpoly(gdf, ipo, ptdx = 100, dbox = 1000.):
             AIpt.append(0)
         else:
             P    = gdf_box.length.sum() * 1.e-3 # total perimeter km of the selected polygon
-            PoverA = 0.05 #max([0.04,P/A])
+            #PoverA = 0.05 #max([0.04,P/A])
             A_unit = ptdx**2 * 1.e-4# ha
             S_unit = PoverA * A_unit*1.e4 #  m   square S_unit = 0.04 A_unit
             Pmax = S_unit * ( A /(A_unit) ) * 1.e-3
@@ -229,11 +245,11 @@ def AIpoly(gdf, ipo, ptdx = 100, dbox = 1000.):
 
 
 ##########################
-def add_AI2gdf(gdf,ptdx,dbox):
+def add_AI2gdf(gdf,ptdx,dbox,PoverA=0.05):
     
     params = []
     for ipo in range(gdf.shape[0]):
-        params.append([gdf,ipo,ptdx,dbox]) 
+        params.append([gdf,ipo,ptdx,dbox,PoverA]) 
 
     flag_parallel_ = True
     if flag_parallel_:
