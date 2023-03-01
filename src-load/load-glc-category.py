@@ -11,6 +11,7 @@ import rasterio
 import shapely
 from fiona.crs import from_epsg
 from rasterio.mask import mask
+import pdb 
 
 def getFeatures(gdf):
     """Function to parse features from GeoDataFrame in such a manner that rasterio wants them"""
@@ -18,9 +19,9 @@ def getFeatures(gdf):
     return [json.loads(gdf.to_json())['features'][0]['geometry']]
 
 
-def clipped_fuelCat_gdf(indir, outdir, iv, xminContinent,yminContinent, xmaxContinent,ymaxContinent):
+def clipped_fuelCat_gdf(indir, outdir, iv, crs, xminContinent,yminContinent, xmaxContinent,ymaxContinent):
 
-    print('fuel global lc')
+    #print('fuel global lc')
     fuelCatTag = []
     fuelCatTag.append([111,113,121,123]) #1
     fuelCatTag.append([115,116,125,126]) #2
@@ -40,8 +41,7 @@ def clipped_fuelCat_gdf(indir, outdir, iv, xminContinent,yminContinent, xmaxCont
         coords = getFeatures(geo)
         data_, out_transform = mask(src, shapes=coords, crop=True)
 
-
-        print ('fuelCat ', iv, end='')
+        #print ('fuelCat ', iv, end='')
         condition =  (data_!=fuelCatTag[iv-1][0])
         if len(fuelCatTag[iv-1]) > 1:
             for xx in fuelCatTag[iv-1][1:]:
@@ -50,7 +50,7 @@ def clipped_fuelCat_gdf(indir, outdir, iv, xminContinent,yminContinent, xmaxCont
         
         if not(False in data_masked.mask): return None
 
-        print (' -- array loaded')
+        #print (' -- array loaded')
         # Use a generator instead of a list
         shape_gen = ((shapely.geometry.shape(s), v) for s, v in rasterio.features.shapes(data_masked, transform=src.transform))
 
@@ -61,7 +61,7 @@ def clipped_fuelCat_gdf(indir, outdir, iv, xminContinent,yminContinent, xmaxCont
         # or build a dict from unpacked shapes
         gdf = gpd.GeoDataFrame(dict(zip(["geometry", "class"], zip(*shape_gen))), crs=src.crs)
 
-        return gdf
+        return gdf.to_crs(crs)
 
 
 if __name__ == '__main__':

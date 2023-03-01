@@ -49,24 +49,29 @@ if __name__ == '__main__':
     dirout = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
    
     if os.path.isfile(dirout+'WII.geojon'):
-        print 'load WII ...'
+        print ('load WII ...')
         WII = gpd.read_file(dirout+'WII.geojon')
 
 
     else:
-        #CLC cat
-        print('load clc ...', end='')
-        sys.stdout.flush()
-        indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/{:s}'.format(continent)
-        #idxclc = [1]
-        #print('  *** warning: only load cat 1 ***' )
-        idxclc = range(1,6)
-        fuelCat_all = []
-        for iv in idxclc:
-            fuelCat_ = gpd.read_file(indir+'fuelCategory{:d}.geojson'.format(iv))
-            fuelCat_ = fuelCat_.to_crs('epsg:3035')
-            fuelCat_all.append(fuelCat_)
-        print(' done')
+        if continent == 'europe':
+            #CLC cat for europe
+            print('load clc ...', end='')
+            sys.stdout.flush()
+            indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/{:s}'.format(continent)
+            #idxclc = [1]
+            #print('  *** warning: only load cat 1 ***' )
+            idxclc = range(1,6)
+            fuelCat_all = []
+            for iv in idxclc:
+                fuelCat_ = gpd.read_file(indir+'fuelCategory{:d}.geojson'.format(iv))
+                fuelCat_ = fuelCat_.to_crs('epsg:3035')
+                fuelCat_all.append(fuelCat_)
+            print(' done')
+   
+        elif continent == 'asia':
+            idxclc = range(1,6)
+            fuelCat_all = [None]*len(idxclc)
 
         WII = None
 
@@ -77,9 +82,13 @@ if __name__ == '__main__':
             indus['area_ha'] = indus['geometry'].area/ 10**4
             indus = indus[indus['area_ha']>1]
             print('{:s} shape'.format(os.path.basename(indusFile)), indus.shape)
+            
+            if indus.shape[0] == 0:
+                continue
 
-            if indus.shape[0]>10:
+            elif indus.shape[0]>10:
                 indus['group'] = tools.cluster_shapes_by_distance(indus, 5.e3,)
+            
             else: 
                 indus['group'] = 0 
 

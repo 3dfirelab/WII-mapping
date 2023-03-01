@@ -12,10 +12,12 @@ import pdb
 import warnings
 #warnings.filterwarnings("error")
 import pyproj
+import importlib 
 
 #homebrwed
 sys.path.append('../src-load/')
-from load-glc-category import clipped_fuelCat_gdf
+glc = importlib.import_module("load-glc-category")
+
 
 ##########################
 def cpu_count():
@@ -134,13 +136,14 @@ def dist2FuelCat(indir,fuelCat, indus):
 
 ##########################
 def buildWII(WII, iv, fuelCat, indus, continent):
+
+    importlib.reload(glc)
    
     bufferDistVegCat = [2400,1200,800,600,480,400,343]
     bb = 10.e3 
-
     nbregroup = indus['group'].max() +1
     #print('fuelCat{:d} - nbre group = {:d}'.format(iv,nbregroup))
-    
+    if  type(nbregroup) is not np.int64: pdb.set_trace()
     for ig in range(0, nbregroup):
         print('fuelCat{:d} - group {:d}/{:d} ... '.format(iv,ig,nbregroup),end='\r')
         sys.stdout.flush()
@@ -148,17 +151,20 @@ def buildWII(WII, iv, fuelCat, indus, continent):
         #print(indus_.shape)
         xmin, ymin, xmax, ymax = indus_.total_bounds
         
-        if type(fuelCat) is geopandas.geodataframe.GeoDataFrame:
+        if type(fuelCat) is gpd.geodataframe.GeoDataFrame:
             fuelCat_ = fuelCat.cx[xmin-bb:xmax+bb, ymin-bb:ymax+bb]
         else: 
             indir = '/mnt/dataEstrella/WII/CLC/'
             outdir = '/mnt/dataEstrella/WII/FuelCategories-CLC/{:s}/'.format(continent)
             to_latlon = pyproj.Transformer.from_crs(indus_.crs, 'epsg:4326')
-            lowerCorner = to_latlon.transform(xmin-bb, ymin-bb)
-            upperCorner = to_latlon.transform(xmax+bb, ymax+bb)
+            lowerCorner = to_latlon.transform(ymin-bb, xmin-bb)
+            upperCorner = to_latlon.transform(ymax+bb, xmax+bb)
 
-            fuelCat_ = clipped_fuelCat_gdf(indir, outdir, iv, lowerCorner[0], lowerCorner[1], upperCorner[0], upperCorner[1])
-            fuelCat_  =  add_AI2gdf(fuelCat_,ptdx=100,dbox=1000,PoverA=0.04)
+            fuelCat_ = glc.clipped_fuelCat_gdf(indir, outdir, iv, indus_.crs, lowerCorner[1], lowerCorner[0], upperCorner[1], upperCorner[0])
+            if fuelCat_ is None:
+                continue
+            else: 
+                fuelCat_  =  add_AI2gdf(fuelCat_,ptdx=100,dbox=1000,PoverA=0.05)
 
         for iai in range(3):
             if iai == 0: 
@@ -237,7 +243,7 @@ def AIpoly(gdf, ipo, ptdx = 100, dbox = 1000., PoverA=0.05):
             Pmin = 2 * np.pi * np.sqrt(1.e4*A/np.pi) / 1.e3
             AIpt.append( 1 - (P-Pmin)/(Pmax-Pmin) ) #Boegart et al 2002 https://sites.bu.edu/cliveg/files/2013/12/jbogaert02.pdf
 
-            if P>Pmax : print(AIpt[-1], Pmax, P, Pmin, A/Abox, P/A*1.e-1)
+            #if P>Pmax : print(AIpt[-1], Pmax, P, Pmin, A/Abox, P/A*1.e-1)
 
             if AIpt[-1] == 1: break
 
