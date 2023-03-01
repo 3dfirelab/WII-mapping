@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
         if flag_industrial:
             
-            outdir = '/mnt/dataEstrella/WII/IndustrialZone/{:s}'.format(continent)
+            outdir = '/mnt/dataEstrella/WII/IndustrialZone/{:s}/'.format(continent)
            
             nbreTile = len( glob.glob( osmfile.split('-latest')[0]+'*.osm.pbf') )
             if nbreTile > 1: 

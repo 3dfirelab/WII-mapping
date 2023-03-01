@@ -58,6 +58,8 @@ if __name__ == '__main__':
     for ic in range(countries_here.shape[0]):
         countries_here[ic,0]= '-'.join(countries_here[ic,0].lower().split(' '))
 
+        if 'malaysia' in countries_here[ic,0]: countries_here[ic,0] = countries_here[ic,0].replace(',','').replace('and-','')
+
     indir = '/mnt/dataEstrella/WII/OSM/PerCountry-{:s}/'.format(continent)
     outdir = '/mnt/dataEstrella/WII/OSM/PerCountry-{:s}/'.format(continent)
     osmfiles = sorted(glob.glob(indir+'*latest.osm.pbf'))
