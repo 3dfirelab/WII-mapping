@@ -37,7 +37,7 @@ def clipped_fuelCat_gdf(indir, outdir, iv, crs, xminContinent,yminContinent, xma
         #clip
         bbox = shapely.geometry.box(xminContinent,yminContinent, xmaxContinent,ymaxContinent)
         geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(4326))
-        geo = geo.to_crs(crs=src.crs.data)
+        #geo = geo.to_crs(crs=src.crs.data)
         coords = getFeatures(geo)
         data_, out_transform = mask(src, shapes=coords, crop=True)
 
@@ -52,7 +52,7 @@ def clipped_fuelCat_gdf(indir, outdir, iv, crs, xminContinent,yminContinent, xma
 
         #print (' -- array loaded')
         # Use a generator instead of a list
-        shape_gen = ((shapely.geometry.shape(s), v) for s, v in rasterio.features.shapes(data_masked, transform=src.transform))
+        shape_gen = ((shapely.geometry.shape(s), v) for s, v in rasterio.features.shapes(data_masked, transform=out_transform))
 
         # either build a pd.DataFrame
         # df = DataFrame(shape_gen, columns=['geometry', 'class'])

@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 from shapely.geometry import Polygon
 import importlib
 import warnings
+import pdb 
 
 #homebrewed
 import tools
@@ -23,23 +24,25 @@ if __name__ == '__main__':
     if continent == 'europe':
         xminEU,xmaxEU = 2500000., 7400000.
         yminEU,ymaxEU = 1400000., 5440568.
+        crs_here = 'epsg:3035'
     elif continent == 'asia':
-        xminEU,xmaxEU = 2500000., 7400000.
-        yminEU,ymaxEU = 1400000., 5440568.
+        xminAll,xmaxAll = -1.315e7, -6.e4
+        yminAll,ymaxAll = -1.79e6, 7.93e6
+        crs_here = 'epsg:3832'
  
     #borders
     indir = '/mnt/dataEstrella/WII/Boundaries/'
     if continent == 'europe':
         bordersNUTS = gpd.read_file(indir+'NUTS/NUTS_RG_01M_2021_4326.geojson')
-        bordersNUST = bordersNUTS.to_crs('epsg:3035')
+        bordersNUST = bordersNUTS.to_crs(crs_here)
         extraNUTS = gpd.read_file(indir+'noNUTS.geojson')
-        extraNUST = extraNUTS.to_crs('epsg:3035')
+        extraNUST = extraNUTS.to_crs(crs_here)
         bordersNUTSm = pd.concat([bordersNUST,extraNUST])
     else:
         bordersNUTSm = None
 
     landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
-    landNE = landNE.to_crs('epsg:3035')
+    landNE = landNE.to_crs(crs_here)
 
 
     #industrial zone
@@ -65,7 +68,7 @@ if __name__ == '__main__':
             fuelCat_all = []
             for iv in idxclc:
                 fuelCat_ = gpd.read_file(indir+'fuelCategory{:d}.geojson'.format(iv))
-                fuelCat_ = fuelCat_.to_crs('epsg:3035')
+                fuelCat_ = fuelCat_.to_crs(crs_here)
                 fuelCat_all.append(fuelCat_)
             print(' done')
    
@@ -77,7 +80,7 @@ if __name__ == '__main__':
 
         for indusFile in indusFiles:
             indus = gpd.read_file(indusFile)
-            indus = indus.to_crs('epsg:3035')
+            indus = indus.to_crs(crs_here)
 
             indus['area_ha'] = indus['geometry'].area/ 10**4
             indus = indus[indus['area_ha']>1]
