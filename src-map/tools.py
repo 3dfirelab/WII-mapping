@@ -155,11 +155,10 @@ def buildWII(WII, iv, fuelCat, indus, continent):
             fuelCat_ = fuelCat.cx[xmin-bb:xmax+bb, ymin-bb:ymax+bb]
         else: 
             indir = '/mnt/dataEstrella/WII/CLC/'
-            outdir = '/mnt/dataEstrella/WII/FuelCategories-CLC/{:s}/'.format(continent)
             to_latlon = pyproj.Transformer.from_crs(indus_.crs, 'epsg:4326')
             lowerCorner = to_latlon.transform(xmin-bb, ymin-bb)
             upperCorner = to_latlon.transform(xmax+bb, ymax+bb)
-            fuelCat_ = glc.clipped_fuelCat_gdf(indir, outdir, iv, indus_.crs, lowerCorner[1], lowerCorner[0], upperCorner[1], upperCorner[0])
+            fuelCat_ = glc.clipped_fuelCat_gdf(indir, iv, indus_.crs, lowerCorner[1], lowerCorner[0], upperCorner[1], upperCorner[0])
             if fuelCat_ is None:
                 continue
             else: 

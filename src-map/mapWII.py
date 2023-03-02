@@ -37,9 +37,10 @@ if __name__ == '__main__':
         bordersNUST = bordersNUTS.to_crs(crs_here)
         extraNUTS = gpd.read_file(indir+'noNUTS.geojson')
         extraNUST = extraNUTS.to_crs(crs_here)
-        bordersNUTSm = pd.concat([bordersNUST,extraNUST])
-    else:
-        bordersNUTSm = None
+        bordersSelection = pd.concat([bordersNUST,extraNUST])
+    elif continent == 'asia':
+        bordersSelection = gpd.read_file(indir+'mask_{:s}.geojson'.format(continent))
+
 
     landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
     landNE = landNE.to_crs(crs_here)
@@ -115,7 +116,7 @@ if __name__ == '__main__':
     fig = plt.figure(figsize=(10,8))
     ax = plt.subplot(111)
     landNE.plot(ax=ax,facecolor='0.9',edgecolor='None')
-    bordersNUTSm[bordersNUTSm['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None')
+    bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None')
 
     WII.plot(ax=ax, facecolor='hotpink', edgecolor='hotpink', linewidth=.2)
     ax.set_xlim(xminEU,xmaxEU)

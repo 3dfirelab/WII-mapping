@@ -18,8 +18,39 @@ def getFeatures(gdf):
     import json
     return [json.loads(gdf.to_json())['features'][0]['geometry']]
 
+def clipped_fuelCat_raster(indir, iv, crs, xminContinent,yminContinent, xmaxContinent,ymaxContinent):
 
-def clipped_fuelCat_gdf(indir, outdir, iv, crs, xminContinent,yminContinent, xmaxContinent,ymaxContinent):
+    #print('fuel global lc')
+    fuelCatTag = []
+    fuelCatTag.append([111,113,121,123]) #1
+    fuelCatTag.append([115,116,125,126]) #2
+    fuelCatTag.append([112,114,122,124,20,30]) #3
+    fuelCatTag.append([90]) #4
+    fuelCatTag.append([100]) #5
+
+    filein = indir + 'PROBAV_LC100_global_v3.0.1_2018-conso_Discrete-Classification-map_EPSG-4326.tif' 
+
+    gdflc = None
+    with rasterio.open(filein) as src:
+        
+        #clip
+        bbox = shapely.geometry.box(xminContinent,yminContinent, xmaxContinent,ymaxContinent)
+        geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(4326))
+        #geo = geo.to_crs(crs=src.crs.data)
+        coords = getFeatures(geo)
+        data_, out_transform = mask(src, shapes=coords, crop=True)
+
+        #print ('fuelCat ', iv, end='')
+        condition =  (data_!=fuelCatTag[iv-1][0])
+        if len(fuelCatTag[iv-1]) > 1:
+            for xx in fuelCatTag[iv-1][1:]:
+                condition &= (data_!=xx)
+        data_masked = np.ma.masked_where(condition,data_)
+
+    return data_masked
+
+
+def clipped_fuelCat_gdf(indir, iv, crs, xminContinent,yminContinent, xmaxContinent,ymaxContinent):
 
     #print('fuel global lc')
     fuelCatTag = []
@@ -80,7 +111,7 @@ if __name__ == '__main__':
 
     for iv in categories:
 
-        gdf = clipped_fuelCat_gdf(indir, outdir, iv, xminContinent,yminContinent, xmaxContinent,ymaxContinent)
+        gdf = clipped_fuelCat_gdf(indir, iv, xminContinent,yminContinent, xmaxContinent,ymaxContinent)
         if gdf is not None: 
             gdf.to_file(outdir+'fuelCategory{:d}.geojson'.format(iv), driver="GeoJSON")
 
