@@ -13,13 +13,22 @@ from fiona.crs import from_epsg
 from rasterio.mask import mask
 import pdb 
 
+#homebrewed
+import tools
+
+
 def getFeatures(gdf):
     """Function to parse features from GeoDataFrame in such a manner that rasterio wants them"""
     import json
     return [json.loads(gdf.to_json())['features'][0]['geometry']]
 
-def clipped_fuelCat_raster(indir, iv, crs, xminContinent,yminContinent, xmaxContinent,ymaxContinent):
+def clipped_fuelCat_raster(indir, iv, crs_here, xminContinent,yminContinent, xmaxContinent,ymaxContinent):
+        
+    to_latlon = pyproj.Transformer.from_crs(crs_here, 'epsg:4326')
+    lowerCorner = to_latlon.transform(xminContinent, yminContinent)
+    upperCorner = to_latlon.transform(xmaxContinent, ymaxContinent)
 
+    src_bounds = (lowerCorner[1], lowerCorner[0], upperCorner[1], upperCorner[0])
     #print('fuel global lc')
     fuelCatTag = []
     fuelCatTag.append([111,113,121,123]) #1
@@ -34,20 +43,28 @@ def clipped_fuelCat_raster(indir, iv, crs, xminContinent,yminContinent, xmaxCont
     with rasterio.open(filein) as src:
         
         #clip
-        bbox = shapely.geometry.box(xminContinent,yminContinent, xmaxContinent,ymaxContinent)
+        bbox = shapely.geometry.box(lowerCorner[1], lowerCorner[0], upperCorner[1], upperCorner[0])
         geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(4326))
         #geo = geo.to_crs(crs=src.crs.data)
         coords = getFeatures(geo)
-        data_, out_transform = mask(src, shapes=coords, crop=True)
+        data_, src_transform = mask(src, shapes=coords, crop=True)
+         
+        data_out = tools.reproject_raster(data_[0], src_bounds, src_transform, geo.crs, crs_here)
+        data_ = None
+        
+        #plt.imshow(data_out)
+        #plt.show()
+        #pdb.set_trace()
 
         #print ('fuelCat ', iv, end='')
-        condition =  (data_!=fuelCatTag[iv-1][0])
+        condition =  (data_out!=fuelCatTag[iv-1][0])
         if len(fuelCatTag[iv-1]) > 1:
             for xx in fuelCatTag[iv-1][1:]:
-                condition &= (data_!=xx)
-        data_masked = np.ma.masked_where(condition,data_)
+                condition &= (data_out!=xx)
+        data_out_masked = np.ma.masked_where(condition,data_out)
 
-    return data_masked
+        print(data_out_masked.shape)
+    return data_out_masked
 
 
 def clipped_fuelCat_gdf(indir, iv, crs, xminContinent,yminContinent, xmaxContinent,ymaxContinent):

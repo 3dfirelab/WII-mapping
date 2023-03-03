@@ -33,4 +33,5 @@ if __name__ == '__main__':
             
    
     extra['LEVL_CODE'] = 0
+    extra['NAME_LATN'] = extraCountries
     extra.to_file(indir+'noNUTS.geojson',driver='GeoJSON')

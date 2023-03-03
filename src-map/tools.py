@@ -13,6 +13,7 @@ import warnings
 #warnings.filterwarnings("error")
 import pyproj
 import importlib 
+from rasterio.warp import calculate_default_transform, reproject, Resampling
 
 #homebrwed
 sys.path.append('../src-load/')
@@ -286,6 +287,30 @@ def add_AI2gdf(gdf,ptdx,dbox,PoverA=0.05):
     gdf['AI'] = results   
 
     return gdf
+
+
+###########################################################
+def reproject_raster(src_band, src_bounds, src_transform, src_crs, dst_crs ):
+    dst_transform, width, height = calculate_default_transform(
+        src_crs,
+        dst_crs,
+        src_band.shape[0],
+        src_band.shape[1],
+        *src_bounds,  # unpacks outer boundaries (left, bottom, right, top)
+        resolution=200.
+    )
+    dst_band = np.zeros([height, width])
+
+    reproject(
+        source=src_band,
+        destination=dst_band,
+        src_transform=src_transform,
+        src_crs=src_crs,
+        dst_transform=dst_transform,
+        dst_crs=dst_crs,
+        resampling=Resampling.nearest)
+    
+    return dst_band
 
 
 ##########################
