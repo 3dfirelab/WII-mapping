@@ -9,6 +9,8 @@ from shapely.geometry import Polygon
 import importlib
 import warnings
 import pdb 
+import pyproj
+from fiona.crs import from_epsg
 
 #homebrewed
 import tools
@@ -22,8 +24,8 @@ if __name__ == '__main__':
     importlib.reload(tools)
     
     if continent == 'europe':
-        xminEU,xmaxEU = 2500000., 7400000.
-        yminEU,ymaxEU = 1400000., 5440568.
+        xminAll,xmaxAll = 2500000., 7400000.
+        yminAll,ymaxAll = 1400000., 5440568.
         crs_here = 'epsg:3035'
     elif continent == 'asia':
         xminAll,xmaxAll = -1.315e7, -6.e4
@@ -45,6 +47,10 @@ if __name__ == '__main__':
     landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
     landNE = landNE.to_crs(crs_here)
 
+    #load graticule
+    gratreso = 15
+    graticule = gpd.read_file(indir+'NaturalEarth_graticules/ne_110m_graticules_{:d}.shp'.format(gratreso))
+    graticule = graticule.to_crs(crs_here)
 
     #industrial zone
     indir = '/mnt/dataEstrella/WII/IndustrialZone/{:s}/'.format(continent)
@@ -115,13 +121,37 @@ if __name__ == '__main__':
 
     fig = plt.figure(figsize=(10,8))
     ax = plt.subplot(111)
-    landNE.plot(ax=ax,facecolor='0.9',edgecolor='None')
-    bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None')
+    landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
+    graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
+    bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
 
-    WII.plot(ax=ax, facecolor='hotpink', edgecolor='hotpink', linewidth=.2)
-    ax.set_xlim(xminEU,xmaxEU)
-    ax.set_ylim(yminEU,ymaxEU)
-    ax.set_title('Wildand Industrial Interface')
+    WII.plot(ax=ax, facecolor='hotpink', edgecolor='hotpink', linewidth=.2,zorder=4)
+    
+    ax.set_xlim(xminAll,xmaxAll)
+    ax.set_ylim(yminAll,ymaxAll)
+  
+    #set axis
+    bbox = shapely.geometry.box(xminAll, yminAll, xmaxAll, ymaxAll)
+    geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+    geo['geometry'] = geo.boundary
+    ptsEdge =  gpd.overlay(graticule, geo, how = 'intersection', keep_geom_type=False)
+    
+    lline = shapely.geometry.LineString([[xminAll,ymaxAll],[xmaxAll,ymaxAll]])
+    geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+    ptsEdgelon =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
+    
+    ax.xaxis.set_ticks(ptsEdgelon.geometry.centroid.x)
+    ax.xaxis.set_ticklabels(ptsEdgelon.display)
+    ax.xaxis.tick_top()
+    
+    lline = shapely.geometry.LineString([[xminAll,yminAll],[xminAll,ymaxAll]])
+    geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+    ptsEdgelat =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
+
+    ax.yaxis.set_ticks(ptsEdgelat.geometry.centroid.y)
+    ax.yaxis.set_ticklabels(ptsEdgelat.display)
+    
+    ax.set_title('Wildand Industrial Interface', pad=30)
     fig.savefig(dirout+'WII.png',dpi=200)
     plt.close(fig)
 
