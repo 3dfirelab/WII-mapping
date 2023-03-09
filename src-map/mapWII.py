@@ -115,7 +115,7 @@ if __name__ == '__main__':
                 WII = tools.buildWII(WII, iv, fuelCat_all[iv-1], indus, continent)
 
             WII.to_file(dirout+'WII-perTyle/WII{:s}.geojon'.format(
-                         os.path.basename(indusFile).split('trial-')[1].split('.geo')),driver='GeoJSON')
+                         os.path.basename(indusFile).split('trial-')[1].split('.geo')[0]),driver='GeoJSON')
             
             if WII_tot is None: 
                 WII_tot = WII
