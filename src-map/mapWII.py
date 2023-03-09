@@ -86,6 +86,7 @@ if __name__ == '__main__':
         WII_tot = None
 
         for indusFile in indusFiles:
+            WII = None
             indus = gpd.read_file(indusFile)
             indus = indus.to_crs(crs_here)
 
