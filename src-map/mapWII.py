@@ -27,10 +27,12 @@ if __name__ == '__main__':
         xminAll,xmaxAll = 2500000., 7400000.
         yminAll,ymaxAll = 1400000., 5440568.
         crs_here = 'epsg:3035'
+        distgroup = 5.e3
     elif continent == 'asia':
         xminAll,xmaxAll = -1.315e7, -6.e4
         yminAll,ymaxAll = -1.79e6, 7.93e6
         crs_here = 'epsg:3832'
+        distgroup = 1.e3
  
     #borders
     indir = '/mnt/dataEstrella/WII/Boundaries/'
@@ -98,7 +100,7 @@ if __name__ == '__main__':
                 continue
 
             elif indus.shape[0]>1:
-                indus['group'] = tools.cluster_shapes_by_distance(indus, 5.e3,)
+                indus['group'] = tools.cluster_shapes_by_distance(indus, distgroup)
             
             else: 
                 indus['group'] = 0 
