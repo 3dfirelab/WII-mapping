@@ -83,7 +83,7 @@ if __name__ == '__main__':
             idxclc = range(1,6)
             fuelCat_all = [None]*len(idxclc)
 
-        WII = None
+        WII_tot = None
 
         for indusFile in indusFiles:
             indus = gpd.read_file(indusFile)
@@ -96,7 +96,7 @@ if __name__ == '__main__':
             if indus.shape[0] == 0:
                 continue
 
-            elif indus.shape[0]>10:
+            elif indus.shape[0]>1:
                 indus['group'] = tools.cluster_shapes_by_distance(indus, 5.e3,)
             
             else: 
@@ -113,8 +113,15 @@ if __name__ == '__main__':
             for iv in idxclc:
                 WII = tools.buildWII(WII, iv, fuelCat_all[iv-1], indus, continent)
 
+            WII.to_file(dirout+'WII-perTyle/WII{:s}.geojon'.format(
+                         os.path.basename(indusFile).split('trial-')[1].split('.geo')),driver='GeoJSON')
+            
+            if WII_tot is None: 
+                WII_tot = WII
+            elif WII_tot.shape[0]>0:
+                WII_tot = pd.concat([WII_tot, WII])
 
-        WII.to_file(dirout+'WII.geojon',driver='GeoJSON')
+        WII_tot.to_file(dirout+'WII2.geojon',driver='GeoJSON')
    
 
     #plot
