@@ -173,8 +173,6 @@ def buildWII(WII, iv, fuelCat, indus, continent):
             elif iai == 2: 
                 fuelCat__ = fuelCat_[(fuelCat_['AI']<=0 )                      ]  # to update to pass it to ==0. need PoverA update. 
         
-            if fuelCat__.shape[0] == 0: continue
-
             vegCat = iv + iai -1
             bufferDistVegCat_ = bufferDistVegCat[vegCat]
 
