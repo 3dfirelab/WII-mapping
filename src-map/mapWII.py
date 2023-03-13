@@ -24,8 +24,12 @@ if __name__ == '__main__':
     continent = 'europe'
     flag_onlyplot = False
     flag_loopIndus = ''
-    if socket.gethostname() == 'pc70682': flag_loopIndus = 'inverse'
-    if socket.gethostname() == 'ubu':     flag_loopIndus = 'center'
+    if socket.gethostname() == 'pc70682': 
+        flag_loopIndus = 'inverse'
+    
+    if socket.gethostname() == 'ubu':     
+        flag_loopIndus = 'center'
+        flag_onlyplot  = True
 
     importlib.reload(tools)
     
@@ -135,7 +139,8 @@ if __name__ == '__main__':
                 for iv in idxclc:
                     WII = tools.buildWII(WII, iv, fuelCat_all[iv-1], indus, continent)
 
-                WII.to_file(WIIFile, driver='GeoJSON')
+                if WII is not None: 
+                    WII.to_file(WIIFile, driver='GeoJSON')
             
             print ('WII area_ha = ', WII.area.sum()*1.e-4 )
             
