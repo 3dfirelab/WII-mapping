@@ -12,6 +12,7 @@ import pdb
 import pyproj
 from fiona.crs import from_epsg
 import socket 
+import numpy as np 
 
 #homebrewed
 import tools
@@ -23,8 +24,8 @@ if __name__ == '__main__':
     continent = 'europe'
     flag_onlyplot = False
     flag_loopIndus = ''
-    if socket.gethostname() === 'pc70682': flag_loopIndus = 'inverse'
-    if socket.gethostname() === 'ubu':     flag_loopIndus = 'center'
+    if socket.gethostname() == 'pc70682': flag_loopIndus = 'inverse'
+    if socket.gethostname() == 'ubu':     flag_loopIndus = 'center'
 
     importlib.reload(tools)
     
@@ -63,7 +64,7 @@ if __name__ == '__main__':
     indir = '/mnt/dataEstrella/WII/IndustrialZone/{:s}/'.format(continent)
     indusFiles = sorted(glob.glob(indir+'*.geojson'))
     if flag_loopIndus == 'reverse': indusFiles = indusFiles[::-1]
-    if flag_loopIndus == 'center' : indusFiles = list( np.roll( np.array(indusFiles), len(indusFiles)/2) )
+    if flag_loopIndus == 'center' : indusFiles = list( np.roll( np.array(indusFiles), len(indusFiles)//2) )
 
     dirout = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
    
@@ -143,10 +144,10 @@ if __name__ == '__main__':
             else:
                 WII_tot = pd.concat([WII_tot, WII])
 
-        if socket.gethostname() === 'moritz':
-            WII_tot.to_file(dirout+'WII2.geojon',driver='GeoJSON')
+        if socket.gethostname() == 'moritz':
+            WII_tot.to_file(dirout+'WII.geojon',driver='GeoJSON')
    
-    if socket.gethostname() === 'moritz':
+    if socket.gethostname() == 'moritz':
     
         #plot
         fig = plt.figure(figsize=(10,8))
