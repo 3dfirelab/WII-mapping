@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
                 indus['area_ha'] = indus['geometry'].area/ 10**4
                 indus = indus[indus['area_ha']>1]
-                print(' ', indus.shape, end='')
+                print(' ', indus.shape)
                 
                 if indus.shape[0] == 0:
                     continue
