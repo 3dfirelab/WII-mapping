@@ -11,6 +11,7 @@ import warnings
 import pdb 
 import pyproj
 from fiona.crs import from_epsg
+import socket 
 
 #homebrewed
 import tools
@@ -21,7 +22,9 @@ if __name__ == '__main__':
 
     continent = 'europe'
     flag_onlyplot = False
-    flag_reverseIndus = False
+    flag_loopIndus = ''
+    if socket.gethostname() === 'pc70682': flag_loopIndus = 'inverse'
+    if socket.gethostname() === 'ubu':     flag_loopIndus = 'center'
 
     importlib.reload(tools)
     
@@ -59,7 +62,8 @@ if __name__ == '__main__':
     #industrial zone
     indir = '/mnt/dataEstrella/WII/IndustrialZone/{:s}/'.format(continent)
     indusFiles = sorted(glob.glob(indir+'*.geojson'))
-    if flag_reverseIndus: indusFiles = indusFiles[::-1]
+    if flag_loopIndus == 'reverse': indusFiles = indusFiles[::-1]
+    if flag_loopIndus == 'center' : indusFiles = list( np.roll( np.array(indusFiles), len(indusFiles)/2) )
 
     dirout = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
    
@@ -139,66 +143,67 @@ if __name__ == '__main__':
             else:
                 WII_tot = pd.concat([WII_tot, WII])
 
-        WII_tot.to_file(dirout+'WII2.geojon',driver='GeoJSON')
+        if socket.gethostname() === 'moritz':
+            WII_tot.to_file(dirout+'WII2.geojon',driver='GeoJSON')
    
-
-    #plot
-
-    fig = plt.figure(figsize=(10,8))
-    ax = plt.subplot(111)
-    landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
-    graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
-    bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
-
-    WII_tot.plot(ax=ax, facecolor='hotpink', edgecolor='hotpink', linewidth=.2,zorder=4)
+    if socket.gethostname() === 'moritz':
     
-    ax.set_xlim(xminAll,xmaxAll)
-    ax.set_ylim(yminAll,ymaxAll)
-  
-    #set axis
-    bbox = shapely.geometry.box(xminAll, yminAll, xmaxAll, ymaxAll)
-    geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
-    geo['geometry'] = geo.boundary
-    ptsEdge =  gpd.overlay(graticule, geo, how = 'intersection', keep_geom_type=False)
-    
-    lline = shapely.geometry.LineString([[xminAll,ymaxAll],[xmaxAll,ymaxAll]])
-    geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
-    ptsEdgelon =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
-    
-    ax.xaxis.set_ticks(ptsEdgelon.geometry.centroid.x)
-    ax.xaxis.set_ticklabels(ptsEdgelon.display)
-    ax.xaxis.tick_top()
-    
-    lline = shapely.geometry.LineString([[xminAll,yminAll],[xminAll,ymaxAll]])
-    geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
-    ptsEdgelat =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
+        #plot
+        fig = plt.figure(figsize=(10,8))
+        ax = plt.subplot(111)
+        landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
+        graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
+        bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
 
-    ax.yaxis.set_ticks(ptsEdgelat.geometry.centroid.y)
-    ax.yaxis.set_ticklabels(ptsEdgelat.display)
-    
-    ax.set_title('Wildand Industrial Interface', pad=30)
-    fig.savefig(dirout+'WII.png',dpi=200)
-    plt.close(fig)
+        WII_tot.plot(ax=ax, facecolor='hotpink', edgecolor='hotpink', linewidth=.2,zorder=4)
+        
+        ax.set_xlim(xminAll,xmaxAll)
+        ax.set_ylim(yminAll,ymaxAll)
+      
+        #set axis
+        bbox = shapely.geometry.box(xminAll, yminAll, xmaxAll, ymaxAll)
+        geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+        geo['geometry'] = geo.boundary
+        ptsEdge =  gpd.overlay(graticule, geo, how = 'intersection', keep_geom_type=False)
+        
+        lline = shapely.geometry.LineString([[xminAll,ymaxAll],[xmaxAll,ymaxAll]])
+        geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+        ptsEdgelon =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
+        
+        ax.xaxis.set_ticks(ptsEdgelon.geometry.centroid.x)
+        ax.xaxis.set_ticklabels(ptsEdgelon.display)
+        ax.xaxis.tick_top()
+        
+        lline = shapely.geometry.LineString([[xminAll,yminAll],[xminAll,ymaxAll]])
+        geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+        ptsEdgelat =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
+
+        ax.yaxis.set_ticks(ptsEdgelat.geometry.centroid.y)
+        ax.yaxis.set_ticklabels(ptsEdgelat.display)
+        
+        ax.set_title('Wildand Industrial Interface', pad=30)
+        fig.savefig(dirout+'WII.png',dpi=200)
+        plt.close(fig)
 
 
-    '''    #print('fueltCat{:d}'.format(iv))
-        key = 'fuelCat{:d}_dist'.format(iv)
-        key2 = 'fuelCat{:d}_idx'.format(iv)
-        indus[key], indus[key2] = tools.dist2FuelCat(indir, fuelCat_all[iv-1], indus)
+        '''    #print('fueltCat{:d}'.format(iv))
+            key = 'fuelCat{:d}_dist'.format(iv)
+            key2 = 'fuelCat{:d}_idx'.format(iv)
+            indus[key], indus[key2] = tools.dist2FuelCat(indir, fuelCat_all[iv-1], indus)
 
-    indus.to_file(dirout+'_dist.'.join(os.path.basename(indusFile).split('.')), driver="GeoJSON")
-    '''
+        indus.to_file(dirout+'_dist.'.join(os.path.basename(indusFile).split('.')), driver="GeoJSON")
+        '''
 
-    #sys.exit()
+        #sys.exit()
 
-    '''
-    ax = plt.subplot(111)
-    bdf.plot(color='white', edgecolor='black',ax=ax, linewidth=0.2)
-    indus.plot(column=indus[key],ax=ax)
-    
-    minx, miny, maxx, maxy = indus.total_bounds
-    ax.set_xlim(minx, maxx)
-    ax.set_ylim(miny, maxy)
+        '''
+        ax = plt.subplot(111)
+        bdf.plot(color='white', edgecolor='black',ax=ax, linewidth=0.2)
+        indus.plot(column=indus[key],ax=ax)
+        
+        minx, miny, maxx, maxy = indus.total_bounds
+        ax.set_xlim(minx, maxx)
+        ax.set_ylim(miny, maxy)
 
-    plt.show()
-    '''
+        plt.show()
+        '''
