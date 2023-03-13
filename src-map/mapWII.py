@@ -19,7 +19,9 @@ warnings.filterwarnings("ignore")
 
 if __name__ == '__main__':
 
-    continent = 'asia'
+    continent = 'europe'
+    flag_onlyplot = False
+    flag_reverseIndus = False
 
     importlib.reload(tools)
     
@@ -57,7 +59,8 @@ if __name__ == '__main__':
     #industrial zone
     indir = '/mnt/dataEstrella/WII/IndustrialZone/{:s}/'.format(continent)
     indusFiles = sorted(glob.glob(indir+'*.geojson'))
-    
+    if flag_reverseIndus: indusFiles = indusFiles[::-1]
+
     dirout = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
    
     if os.path.isfile(dirout+'WII.geojon'):
@@ -70,7 +73,7 @@ if __name__ == '__main__':
             #CLC cat for europe
             print('load clc ...', end='')
             sys.stdout.flush()
-            indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/{:s}'.format(continent)
+            indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/{:s}/'.format(continent)
             #idxclc = [1]
             #print('  *** warning: only load cat 1 ***' )
             idxclc = range(1,6)
@@ -88,40 +91,52 @@ if __name__ == '__main__':
         WII_tot = None
 
         for indusFile in indusFiles:
-            WII = None
-            indus = gpd.read_file(indusFile)
-            indus = indus.to_crs(crs_here)
-
-            indus['area_ha'] = indus['geometry'].area/ 10**4
-            indus = indus[indus['area_ha']>1]
-            print('{:s} shape'.format(os.path.basename(indusFile)), indus.shape)
             
-            if indus.shape[0] == 0:
-                continue
+            WIIFile = dirout+'WII-perTyle/WII{:s}.geojon'.format(
+                         os.path.basename(indusFile).split('trial-')[1].split('.geo')[0])
+            if os.path.isfile(WIIFile):
+                print('{:s} '.format(os.path.basename(indusFile)), end='')
+                WII = gpd.read_file(WIIFile)
+                print ('... loaded', end='')
+            else:
+                if flag_onlyplot: continue
+                print('{:s} shape'.format(os.path.basename(indusFile)), end='')
 
-            elif indus.shape[0]>1:
-                indus['group'] = tools.cluster_shapes_by_distance(indus, distgroup)
+                WII = None
+                indus = gpd.read_file(indusFile)
+                indus = indus.to_crs(crs_here)
+
+                indus['area_ha'] = indus['geometry'].area/ 10**4
+                indus = indus[indus['area_ha']>1]
+                print(' ', indus.shape, end='')
+                
+                if indus.shape[0] == 0:
+                    continue
+
+                elif indus.shape[0]>1:
+                    indus['group'] = tools.cluster_shapes_by_distance(indus, distgroup)
+                
+                else: 
+                    indus['group'] = 0 
+
+                #print('nbre group :',indus['group'].max()+1)
+                #indus['group'] = indus.group.astype(str)
+                #indus.plot(column='group', legend=True)
+                #plt.show()
+                #sys.exit()
+
+                indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/'
+
+                for iv in idxclc:
+                    WII = tools.buildWII(WII, iv, fuelCat_all[iv-1], indus, continent)
+
+                WII.to_file(WIIFile, driver='GeoJSON')
             
-            else: 
-                indus['group'] = 0 
-
-            #print('nbre group :',indus['group'].max()+1)
-            #indus['group'] = indus.group.astype(str)
-            #indus.plot(column='group', legend=True)
-            #plt.show()
-            #sys.exit()
-
-            indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/'
-
-            for iv in idxclc:
-                WII = tools.buildWII(WII, iv, fuelCat_all[iv-1], indus, continent)
-
-            WII.to_file(dirout+'WII-perTyle/WII{:s}.geojon'.format(
-                         os.path.basename(indusFile).split('trial-')[1].split('.geo')[0]),driver='GeoJSON')
+            print ('WII area_ha = ', WII.area.sum()*1.e-4 )
             
             if WII_tot is None: 
                 WII_tot = WII
-            elif WII_tot.shape[0]>0:
+            else:
                 WII_tot = pd.concat([WII_tot, WII])
 
         WII_tot.to_file(dirout+'WII2.geojon',driver='GeoJSON')
@@ -135,7 +150,7 @@ if __name__ == '__main__':
     graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
     bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
 
-    WII.plot(ax=ax, facecolor='hotpink', edgecolor='hotpink', linewidth=.2,zorder=4)
+    WII_tot.plot(ax=ax, facecolor='hotpink', edgecolor='hotpink', linewidth=.2,zorder=4)
     
     ax.set_xlim(xminAll,xmaxAll)
     ax.set_ylim(yminAll,ymaxAll)

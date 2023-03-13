@@ -91,13 +91,12 @@ if __name__ == '__main__':
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.1)
     landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
-    graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=4)
-    bordersSelection.buffer(-1.e4)[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
+    graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
+    #bordersSelection.buffer(-1.e4)[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
 
-    selection.plot(ax=ax,cax=cax,column='WIIoverIndus',legend=True,vmax=np.percentile(selection['WIIoverIndus'],95),zorder=3)
+    selection.plot(ax=ax,cax=cax,column='WIIoverIndus',legend=True,vmax=np.percentile(selection['WIIoverIndus'],95),zorder=2)
     ax.set_xlim(xminAll,xmaxAll)
     ax.set_ylim(yminAll,ymaxAll)
-    
     #set axis
     bbox = shapely.geometry.box(xminAll, yminAll, xmaxAll, ymaxAll)
     geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
@@ -128,12 +127,33 @@ if __name__ == '__main__':
     ax = plt.subplot(111)
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.1)
-    landNE.plot(ax=ax,facecolor='0.9',edgecolor='None')
-    bordersSelection.buffer(-1.e4)[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None')
+    landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
+    graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
+    #bordersSelection.buffer(-1.e4)[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
 
-    selection.plot(ax=ax,cax=cax,column='WIIoverFuel',legend=True,vmax=np.percentile(selection['WIIoverFuel'],95))
+    selection.plot(ax=ax,cax=cax,column='WIIoverFuel',legend=True,vmax=np.percentile(selection['WIIoverFuel'],95),zorder=2)
     ax.set_xlim(xminAll,xmaxAll)
     ax.set_ylim(yminAll,ymaxAll)
+    #set axis
+    bbox = shapely.geometry.box(xminAll, yminAll, xmaxAll, ymaxAll)
+    geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+    geo['geometry'] = geo.boundary
+    ptsEdge =  gpd.overlay(graticule, geo, how = 'intersection', keep_geom_type=False)
+    
+    lline = shapely.geometry.LineString([[xminAll,ymaxAll],[xmaxAll,ymaxAll]])
+    geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+    ptsEdgelon =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
+    
+    ax.xaxis.set_ticks(ptsEdgelon.geometry.centroid.x)
+    ax.xaxis.set_ticklabels(ptsEdgelon.display)
+    ax.xaxis.tick_top()
+    
+    lline = shapely.geometry.LineString([[xminAll,yminAll],[xminAll,ymaxAll]])
+    geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+    ptsEdgelat =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
+
+    ax.yaxis.set_ticks(ptsEdgelat.geometry.centroid.y)
+    ax.yaxis.set_ticklabels(ptsEdgelat.display)
     ax.set_title('Ratio WII Area over total Fuel Area per Country', pad=30)
     fig.savefig(dirout+'RatioWIIoverFuel.png',dpi=200)
     plt.close(fig)
@@ -161,7 +181,6 @@ if __name__ == '__main__':
             selectionProv.loc[ipoly,'WIIoverFuel']  = WII_.area.sum()/(totalAreaFuelCat*1.e4)
 
 
-        pd.DataFrame(selectionProv.drop(columns='geometry')).to_csv(dirout+'{:s}_info_province'.format(continent))
         #plot
         #####
         #indus
@@ -175,8 +194,28 @@ if __name__ == '__main__':
         selectionProv.plot(ax=ax,cax=cax,column='WIIoverIndus',legend=True,vmax=np.percentile(selection['WIIoverIndus'],95),zorder=2)
         ax.set_xlim(xminAll,xmaxAll)
         ax.set_ylim(yminAll,ymaxAll)
+        #set axis
+        bbox = shapely.geometry.box(xminAll, yminAll, xmaxAll, ymaxAll)
+        geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+        geo['geometry'] = geo.boundary
+        ptsEdge =  gpd.overlay(graticule, geo, how = 'intersection', keep_geom_type=False)
+        
+        lline = shapely.geometry.LineString([[xminAll,ymaxAll],[xmaxAll,ymaxAll]])
+        geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+        ptsEdgelon =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
+        
+        ax.xaxis.set_ticks(ptsEdgelon.geometry.centroid.x)
+        ax.xaxis.set_ticklabels(ptsEdgelon.display)
+        ax.xaxis.tick_top()
+        
+        lline = shapely.geometry.LineString([[xminAll,yminAll],[xminAll,ymaxAll]])
+        geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+        ptsEdgelat =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
 
-        ax.set_title('Ratio WII Area over Industrial Area per Province in the European Union')
+        ax.yaxis.set_ticks(ptsEdgelat.geometry.centroid.y)
+        ax.yaxis.set_ticklabels(ptsEdgelat.display)
+
+        ax.set_title('Ratio WII Area over Industrial Area per Province in the European Union', pad=30)
         fig.savefig(dirout+'RatioWIIoverIndus_province.png',dpi=200)
         plt.close(fig)
 
@@ -186,12 +225,12 @@ if __name__ == '__main__':
         ax = plt.subplot(111)
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.1)
-        landNE.plot(ax=ax,facecolor='0.9',edgecolor='None')
+        landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
+        graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
 
-        selectionProv.plot(ax=ax,cax=cax,column='WIIoverFuel',legend=True,vmax=np.percentile(selection['WIIoverFuel'],95))
+        selectionProv.plot(ax=ax,cax=cax,column='WIIoverFuel',legend=True,vmax=np.percentile(selection['WIIoverFuel'],95),zorder=2)
         ax.set_xlim(xminAll,xmaxAll)
         ax.set_ylim(yminAll,ymaxAll)
-            
         #set axis
         bbox = shapely.geometry.box(xminAll, yminAll, xmaxAll, ymaxAll)
         geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(crs_here.split(':')[1]))

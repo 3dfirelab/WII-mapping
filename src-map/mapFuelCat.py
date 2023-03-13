@@ -38,6 +38,7 @@ def loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll):
             fuelCat_ = gpd.read_file(indir+'fuelCategory{:d}.geojson'.format(iv))
             fuelCat_ = fuelCat_.to_crs(crs_here)
             fuelCat_['rank'] = 'vegetation category {:d}'.format(iv)
+            fuelCat_['ICat'] = iv
 
             fuelCat_all.append(fuelCat_)
 
@@ -55,8 +56,10 @@ def loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll):
             if fuelCat_all is None:
                 fuelCat_all = glc.clipped_fuelCat_raster(indir, iv, crs_here, xminAll, yminAll, xmaxAll, ymaxAll ) 
                 fuelCat_all.data[fuelCat_all.mask == False] = iv
+                fuelCat_all['ICat'] = iv
             else:
                 fuelCat_ = glc.clipped_fuelCat_raster(indir, iv, crs_here, xminAll, yminAll, xmaxAll, ymaxAll) 
+                fuelCat_['ICat'] = iv
                 fuelCat_all.data[fuelCat_.mask == False] = iv
                 fuelCat_all.mask[fuelCat_.mask == False] = False
                 fuelCat_ = None

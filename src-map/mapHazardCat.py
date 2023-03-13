@@ -41,7 +41,7 @@ if __name__ == '__main__':
     graticule = graticule.to_crs(crs_here)
 
 
-    dirout = '/mnt/dataEstrella/WII/Maps-Product/'
+    dirout = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
     
     colorCat=['tab:red', 'tab:orange', 'tab:pink', 'tab:purple' ,'tab:brown', 'tab:cyan' ,'tab:blue']
     color_dict = {'hazard category 1':colorCat[0], 

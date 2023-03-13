@@ -164,7 +164,7 @@ def buildWII(WII, iv, fuelCat, indus, continent):
                 continue
             else: 
                 fuelCat_  =  add_AI2gdf(fuelCat_,ptdx=100,dbox=1000,PoverA=0.05)
-
+    
         for iai in range(3):
             if iai == 0: 
                 fuelCat__ = fuelCat_[(fuelCat_['AI']>0.9)                      ]
@@ -172,13 +172,15 @@ def buildWII(WII, iv, fuelCat, indus, continent):
                 fuelCat__ = fuelCat_[(fuelCat_['AI']>0  )&(fuelCat_['AI']<=0.9)]
             elif iai == 2: 
                 fuelCat__ = fuelCat_[(fuelCat_['AI']<=0 )                      ]  # to update to pass it to ==0. need PoverA update. 
+        
+            if fuelCat__.shape[0] == 0: continue
 
-            vegCat = (iv-1) + iai
+            vegCat = iv + iai -1
             bufferDistVegCat_ = bufferDistVegCat[vegCat]
 
-            indus_['geometry'] = indus_.geometry.apply(lambda g: g.buffer(bufferDistVegCat_))
+            indus__['geometry'] = indus_.geometry.apply(lambda g: g.buffer(bufferDistVegCat_))
         
-            WII_ = gpd.overlay(fuelCat__, indus_, how = 'intersection', keep_geom_type=False)
+            WII_ = gpd.overlay(fuelCat__, indus__, how = 'intersection', keep_geom_type=False)
 
             if WII is None: 
                 WII = WII_

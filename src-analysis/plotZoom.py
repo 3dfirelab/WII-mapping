@@ -1,0 +1,252 @@
+import sys
+import os 
+import pandas as pd
+import geopandas as gpd
+import shapely 
+import glob
+import matplotlib as mpl 
+from matplotlib import pyplot as plt
+import matplotlib.colors as colors
+from shapely.geometry import Polygon
+import importlib
+import warnings
+import pdb 
+import pyproj
+from fiona.crs import from_epsg
+from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+import matplotlib.font_manager as fm
+
+#homebrewed
+sys.path.append('../src-map/')
+#import tools
+import mapFuelCat
+
+warnings.filterwarnings("ignore")
+
+if __name__ == '__main__':
+
+    continent = 'europe'
+    flag_onlyplot = True
+
+    #importlib.reload(tools)
+    
+    if continent == 'europe':
+        xminAll,xmaxAll = 2500000., 7400000.
+        yminAll,ymaxAll = 1400000., 5440568.
+        crs_here = 'epsg:3035'
+        distgroup = 5.e3
+    elif continent == 'asia':
+        xminAll,xmaxAll = -1.315e7, -6.e4
+        yminAll,ymaxAll = -1.79e6, 7.93e6
+        crs_here = 'epsg:3832'
+        distgroup = 1.e3
+ 
+    #borders
+    indir = '/mnt/dataEstrella/WII/Boundaries/'
+    if continent == 'europe':
+        bordersNUTS = gpd.read_file(indir+'NUTS/NUTS_RG_01M_2021_4326.geojson')
+        bordersNUST = bordersNUTS.to_crs(crs_here)
+        extraNUTS = gpd.read_file(indir+'noNUTS.geojson')
+        extraNUST = extraNUTS.to_crs(crs_here)
+        bordersSelection = pd.concat([bordersNUST,extraNUST])
+    elif continent == 'asia':
+        bordersSelection = gpd.read_file(indir+'mask_{:s}.geojson'.format(continent))
+
+
+    landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
+    landNE = landNE.to_crs(crs_here)
+
+    #load graticule
+    gratreso = 15
+    graticule = gpd.read_file(indir+'NaturalEarth_graticules/ne_110m_graticules_{:d}.shp'.format(gratreso))
+    graticule = graticule.to_crs(crs_here)
+
+    #industrial zone
+    indir = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
+    indusAll = gpd.read_file(indir+'industrialZone_osmSource.geojon')
+    
+    #WII
+    indir = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
+    WIIAll = gpd.read_file(indir+'WII.geojon')
+   
+    #Fuel
+    idxclc, fuelCat_all = mapFuelCat.loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll)
+    
+    #add hazard
+    if continent == 'europe':
+        fuelCat_all['IAI'] = -999
+        fuelCat_all.loc[(fuelCat_all['AI']>0.9)                         ,'IAI'] = 0
+        fuelCat_all.loc[(fuelCat_all['AI']>0  )&(fuelCat_all['AI']<=0.9),'IAI'] = 1
+        fuelCat_all.loc[(fuelCat_all['AI']<=0 )                         ,'IAI'] = 2 # to update to pass it to ==0. need PoverA update. 
+
+        fuelCat_all['IFH'] = fuelCat_all['ICat'] + fuelCat_all['IAI']
+        fuelCat_all['FH_rank'] = 'hazard category ' + fuelCat_all['IFH'].astype(str)
+    else: 
+        print('****** no fire hazard rank available here for continent = '.format(continent))
+        sys.exit()
+
+    dirout = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
+    xminHere,xmaxHere = 3.6370e6, 3.6760e6 
+    yminHere,ymaxHere = 2.0805e6, 2.1159e6
+
+    #plot geo
+    ####
+    mpl.rcdefaults()
+    fig = plt.figure(figsize=(10,8))
+    ax = plt.subplot(111)
+    landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
+    graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
+    bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
+
+    bbox = shapely.geometry.box(xminHere, yminHere, xmaxHere, ymaxHere)
+    geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+    geo['geometry'] = geo.boundary
+    geo.plot(ax=ax,edgecolor='k',zorder=2,linewidth=0.5)
+
+    ax.set_xlim(xminAll,xmaxAll)
+    ax.set_ylim(yminAll,ymaxAll)
+
+
+    #set axis
+    bbox = shapely.geometry.box(xminAll, yminAll, xmaxAll, ymaxAll)
+    geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+    geo['geometry'] = geo.boundary
+    ptsEdge =  gpd.overlay(graticule, geo, how = 'intersection', keep_geom_type=False)
+    
+    lline = shapely.geometry.LineString([[xminAll,ymaxAll],[xmaxAll,ymaxAll]])
+    geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+    ptsEdgelon =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
+    
+    ax.xaxis.set_ticks(ptsEdgelon.geometry.centroid.x)
+    ax.xaxis.set_ticklabels(ptsEdgelon.display)
+    ax.xaxis.tick_top()
+    
+    lline = shapely.geometry.LineString([[xminAll,yminAll],[xminAll,ymaxAll]])
+    geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+    ptsEdgelat =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
+
+    ax.yaxis.set_ticks(ptsEdgelat.geometry.centroid.y)
+    ax.yaxis.set_ticklabels(ptsEdgelat.display)
+
+    ax.set_title('ZoomLocation', pad=10)
+    
+    fig.savefig(dirout+'ZoomLocation.png',dpi=200)
+    plt.close(fig)
+
+    #plot 4
+    ####
+    mpl.rcdefaults()
+    mpl.rcParams['figure.subplot.left'] = .05
+    mpl.rcParams['figure.subplot.right'] = .95
+    mpl.rcParams['figure.subplot.top'] = 0.95
+    mpl.rcParams['figure.subplot.bottom'] = .05
+    mpl.rcParams['figure.subplot.hspace'] = 0.05
+    mpl.rcParams['figure.subplot.wspace'] = 0.05
+    fig = plt.figure(figsize=(10,10))
+
+    ax = plt.subplot(221)
+    landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
+    graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
+    bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
+
+    indusAll.cx[xminHere:xmaxHere, yminHere:ymaxHere].plot(ax=ax, facecolor='k', edgecolor='k', linewidth=.2,zorder=4)
+    
+    ax.set_xlim(xminHere,xmaxHere)
+    ax.set_ylim(yminHere,ymaxHere)
+    ax.set_title('Industrial Area', pad=10)
+    ax.set_axis_off()
+
+    fontprops = fm.FontProperties(size=10)
+    scalebar = AnchoredSizeBar(ax.transData,
+                               3000, '3 km', 'upper right', 
+                               pad=.3,
+                               color='k',
+                               frameon=True,
+                               size_vertical=10,
+                               fontproperties=fontprops)
+
+    ax.add_artist(scalebar)
+
+    ax = plt.subplot(222)
+    landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
+    graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
+    bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
+    
+    colorCat=['darkgreen', 'fuchsia', 'gold', 'tomato' ,'teal']
+    color_dict = {'vegetation category 1':colorCat[0], 
+                  'vegetation category 2':colorCat[1],
+                  'vegetation category 3':colorCat[2],
+                  'vegetation category 4':colorCat[3],
+                  'vegetation category 5':colorCat[4], }
+
+    fuelCat_all.cx[xminHere:xmaxHere, yminHere:ymaxHere].plot(ax=ax, column='rank', legend=True, cmap=colors.ListedColormap(list(color_dict.values())),zorder=4)
+    indusAll.cx[xminHere:xmaxHere, yminHere:ymaxHere].plot(ax=ax, facecolor='k', edgecolor='k', linewidth=.2,zorder=5, )
+    
+    ax.set_xlim(xminHere,xmaxHere)
+    ax.set_ylim(yminHere,ymaxHere)
+    ax.set_title('Fuel Categories Area', pad=10)
+    ax.set_axis_off()
+
+
+    ax = plt.subplot(223)
+    landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
+    graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
+    bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
+    
+    colorCat=['tab:red', 'tab:orange', 'tab:pink', 'tab:purple' ,'tab:brown', 'tab:cyan' ,'tab:blue']
+    color_dict = {'hazard category 1':colorCat[0], 
+                  'hazard category 2':colorCat[1],
+                  'hazard category 3':colorCat[2],
+                  'hazard category 4':colorCat[3],
+                  'hazard category 5':colorCat[4],
+                  'hazard category 6':colorCat[5],
+                  'hazard category 7':colorCat[6], }
+    
+    fuelCat_all.cx[xminHere:xmaxHere, yminHere:ymaxHere].plot(ax=ax, column='FH_rank', legend=True, cmap=colors.ListedColormap(list(color_dict.values())),zorder=4)
+    indusAll.cx[xminHere:xmaxHere, yminHere:ymaxHere].plot(ax=ax, facecolor='k', edgecolor='k', linewidth=.2,zorder=5,)
+    
+    ax.set_xlim(xminHere,xmaxHere)
+    ax.set_ylim(yminHere,ymaxHere)
+    ax.set_title('Fire Hazard Categories Area', pad=10)
+    ax.set_axis_off()
+
+
+    ax = plt.subplot(224)
+    landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
+    graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
+    bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
+
+    WIIAll.cx[xminHere:xmaxHere, yminHere:ymaxHere].plot(ax=ax, facecolor='hotpink', edgecolor='hotpink', linewidth=.2,zorder=4)
+    indusAll.cx[xminHere:xmaxHere, yminHere:ymaxHere].plot(ax=ax, facecolor='k', edgecolor='k', linewidth=.2,zorder=5, )
+    
+    ax.set_xlim(xminHere,xmaxHere)
+    ax.set_ylim(yminHere,ymaxHere)
+    ax.set_title('Wildland Industrial Interface', pad=10)
+    ax.set_axis_off()
+
+
+    fig.savefig(dirout+'ZoomIndusFuelHazardWII.png',dpi=200)
+    plt.close(fig)
+
+
+    '''    #print('fueltCat{:d}'.format(iv))
+        key = 'fuelCat{:d}_dist'.format(iv)
+        key2 = 'fuelCat{:d}_idx'.format(iv)
+        indus[key], indus[key2] = tools.dist2FuelCat(indir, fuelCat_all[iv-1], indus)
+
+    indus.to_file(dirout+'_dist.'.join(os.path.basename(indusFile).split('.')), driver="GeoJSON")
+    '''
+
+    #sys.exit()
+
+    '''
+    ax = plt.subplot(111)
+    bdf.plot(color='white', edgecolor='black',ax=ax, linewidth=0.2)
+    indus.plot(column=indus[key],ax=ax)
+    
+    minx, miny, maxx, maxy = indus.total_bounds
+    ax.set_xlim(minx, maxx)
+    ax.set_ylim(miny, maxy)
+
+    plt.show()
+    '''
