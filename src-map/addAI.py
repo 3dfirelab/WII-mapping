@@ -5,7 +5,9 @@ import tools
 
 if __name__ == '__main__':
     
-    indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/'
+    continent = 'asia'
+
+    indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/{:s}'.format(continent)
     ptdx = 100
     dbox = 1000.
 
