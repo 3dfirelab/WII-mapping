@@ -7,7 +7,7 @@ if __name__ == '__main__':
     
     continent = 'asia'
 
-    indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/{:s}'.format(continent)
+    indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/{:s}/'.format(continent)
     ptdx = 100
     dbox = 1000.
 
