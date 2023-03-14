@@ -21,7 +21,7 @@ warnings.filterwarnings("ignore")
 
 if __name__ == '__main__':
 
-    continent = 'europe'
+    continent = 'asia'
     flag_onlyplot = False
     flag_loopIndus = ''
     if socket.gethostname() == 'pc70682': 
@@ -29,7 +29,6 @@ if __name__ == '__main__':
     
     if socket.gethostname() == 'ubu':     
         flag_loopIndus = 'center'
-        flag_onlyplot  = True
 
     importlib.reload(tools)
     
@@ -67,7 +66,7 @@ if __name__ == '__main__':
     #industrial zone
     indir = '/mnt/dataEstrella/WII/IndustrialZone/{:s}/'.format(continent)
     indusFiles = sorted(glob.glob(indir+'*.geojson'))
-    if flag_loopIndus == 'reverse': indusFiles = indusFiles[::-1]
+    if flag_loopIndus == 'inverse': indusFiles = indusFiles[::-1]
     if flag_loopIndus == 'center' : indusFiles = list( np.roll( np.array(indusFiles), len(indusFiles)//2) )
 
     dirout = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)

@@ -12,8 +12,11 @@ import shapely
 from fiona.crs import from_epsg
 from rasterio.mask import mask
 import pdb 
+from multiprocessing import Pool, cpu_count
+import warnings
 
 #homebrewed
+sys.path.append('../src-map/')
 import tools
 
 
@@ -87,8 +90,10 @@ def clipped_fuelCat_gdf(indir, iv, crs, xminContinent,yminContinent, xmaxContine
         geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(4326))
         #geo = geo.to_crs(crs=src.crs.data)
         coords = getFeatures(geo)
-        data_, out_transform = mask(src, shapes=coords, crop=True)
-
+        try:
+            data_, out_transform = mask(src, shapes=coords, crop=True)
+        except: 
+            pdb.set_trace()
         #print ('fuelCat ', iv, end='')
         condition =  (data_!=fuelCatTag[iv-1][0])
         if len(fuelCatTag[iv-1]) > 1:
@@ -111,26 +116,81 @@ def clipped_fuelCat_gdf(indir, iv, crs, xminContinent,yminContinent, xmaxContine
 
         return gdf.to_crs(crs)
 
+def fctunion(x):
+    return x.buffer(1).unary_union.buffer(-1)
 
 if __name__ == '__main__':
 
+    warnings.filterwarnings("ignore")
     continent = 'asia'
     
     if continent == 'europe':
         xminContinent,yminContinent, xmaxContinent,ymaxContinent = [-31., 24.505457173625324, 99.52727619009086, 80.51193780175987]
+        crs_here = 'epsg:3035'
     elif continent == 'asia':
-        #xminContinent,yminContinent, xmaxContinent,ymaxContinent = [28.7, -14.9, 188, 87.]
-        xminContinent,yminContinent, xmaxContinent,ymaxContinent = [124.613617-1,  33.197577+1,  131.862522-1,  38.624335+1 ] 
+        #xminContinent,yminContinent, xmaxContinent,ymaxContinent = [28.7, -14.9, 150, 87.]
+        xminContinent,yminContinent, xmaxContinent,ymaxContinent = [40, -15., 140, 50.]
+        #xminContinent,yminContinent, xmaxContinent,ymaxContinent = [124.613617-1,  33.197577+1,  131.862522-1,  38.624335+1 ] 
+        crs_here = 'epsg:3832'
 
     categories = np.arange(1,6)
     indir = '/mnt/dataEstrella/WII/CLC/'
     outdir = '/mnt/dataEstrella/WII/FuelCategories-CLC/{:s}/'.format(continent)
 
+    dd = 0.5
+    lonsTyle = np.arange(xminContinent,xmaxContinent+dd,dd)
+    latsTyle = np.arange(yminContinent,ymaxContinent+dd,dd)
+        
+    nn = (lonsTyle.shape[0]-1)*(latsTyle.shape[0]-1)
     for iv in categories:
+        print('fuelcat{:d}'.format(iv))
+        ii = 0
+        fuelCats = []
+        for ilat, lat_ in enumerate(latsTyle[:-1]):
+            for ilon, lon_ in enumerate(lonsTyle[:-1]):
 
-        gdf = clipped_fuelCat_gdf(indir, iv, xminContinent,yminContinent, xmaxContinent,ymaxContinent)
-        if gdf is not None: 
-            gdf.to_file(outdir+'fuelCategory{:d}.geojson'.format(iv), driver="GeoJSON")
+                gdf = clipped_fuelCat_gdf(indir, iv, crs_here, lon_, lat_, lonsTyle[ilon+1], latsTyle[ilat+1])
+                print('{:.2f}'.format(100.*ii/nn), end='\r')
+               
+                if gdf is None: 
+                    ii += 1
+                    continue
+    
+                if gdf.shape[0]>20:
+                    geom_arr = []
+                    for i in range(0, len(gdf), 10):
+                        geom_arr.append(gdf.iloc[i:i+10])
+             
+                    with Pool(20) as p:
+                        geom_union = p.map(fctunion, geom_arr) 
+                
+                    gdf = gpd.GeoDataFrame(geometry=geom_union, crs=crs_here).explode().reset_index()
+                
+                else:
+                    geom_union = gdf.buffer(1).unary_union.buffer(-1)
 
+                    gdf = gpd.GeoDataFrame(geometry=[geom_union], crs=crs_here).explode().reset_index()
+                
+                fuelCats.append(gdf)
+
+                print('{:.2f}'.format(ii/nn), end='\r')
+               
+                ii += 1
+
+        gdf = pd.concat(fuelCats)
+        #union = gdf.buffer(1).unary_union.buffer(-1)
+
+        geom_arr = []
+        # Converting geometries list to nested list of geometries
+        for i in range(0, len(gdf), 10000):
+            geom_arr.append(gdf.iloc[i:i+10000])
+ 
+        # Creating multiprocessing pool to perform union operation of chunks of geometries
+        with Pool(cpu_count()) as p:
+            geom_union = p.map(fctunion, geom_arr) 
+
+        gdf = gpd.GeoDataFrame(geometry=geom_union, crs=crs_here).explode().reset_index()
+
+        gdf.to_file(outdir+'fuelCategory{:d}.geojson'.format(iv),driver='GeoJSON')
 
 

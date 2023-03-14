@@ -70,13 +70,23 @@ if __name__ == '__main__':
     
     #per country
     ############
+    print('per country:')
     selection = bordersSelection[bordersSelection['LEVL_CODE']==0].reset_index()
     selection['WIIoverIndus'] = -999
     selection['WIIoverFuel'] = -999
+    nn = len(selection)
     for ipoly in range(len(selection)):
-        indus_ = gpd.overlay(selection[ipoly:ipoly+1], indus, how = 'intersection', keep_geom_type=False)
-        WII_ = gpd.overlay(selection[ipoly:ipoly+1], WII, how = 'intersection', keep_geom_type=False)
-        fuelCat_all_ = gpd.overlay(selection[ipoly:ipoly+1], fuelCat_all, how = 'intersection', keep_geom_type=False)
+        print('{:05.1f} %'.format(100*ipoly/nn), end='\r')
+        sxmin, symin, sxmax, symax = selection[ipoly:ipoly+1].total_bounds
+        
+        tmp = indus.cx[sxmin:sxmax,symin:symax]
+        indus_ = gpd.overlay(selection[ipoly:ipoly+1], tmp, how = 'intersection', keep_geom_type=False)
+        
+        tmp = WII.cx[sxmin:sxmax,symin:symax]
+        WII_ = gpd.overlay(selection[ipoly:ipoly+1], tmp, how = 'intersection', keep_geom_type=False)
+        
+        tmp = fuelCat_all.cx[sxmin:sxmax,symin:symax]
+        fuelCat_all_ = gpd.overlay(selection[ipoly:ipoly+1], tmp, how = 'intersection', keep_geom_type=False)
         
         totalAreaFuelCat = fuelCat_all_.area.sum()*1.e-4
 
@@ -160,16 +170,26 @@ if __name__ == '__main__':
 
     #per province
     ############
+    print('per province:')
     if continent=='europe':
         selectionProv = bordersNUST[bordersNUST['LEVL_CODE']==3].reset_index()
         selectionProv['WIIoverIndus'] = -999
         selectionProv['WIIoverFuel'] = -999
         selectionProv['IndusAera'] = -999
         selectionProv['WIIAera'] = -999
+        nn = len(selectionProv)
         for ipoly in range(len(selectionProv)):
-            indus_       = gpd.overlay(selectionProv[ipoly:ipoly+1], indus, how = 'intersection', keep_geom_type=False)
-            WII_         = gpd.overlay(selectionProv[ipoly:ipoly+1], WII, how = 'intersection', keep_geom_type=False)
-            fuelCat_all_ = gpd.overlay(selectionProv[ipoly:ipoly+1], fuelCat_all, how = 'intersection', keep_geom_type=False)
+            print('{:05.1f} %'.format(100*ipoly/nn), end='\r')
+            sxmin, symin, sxmax, symax = selectionProv[ipoly:ipoly+1].total_bounds
+            
+            tmp = indus.cx[sxmin:sxmax,symin:symax]
+            indus_ =       gpd.overlay(selectionProv[ipoly:ipoly+1], tmp, how = 'intersection', keep_geom_type=False)
+        
+            tmp = WII.cx[sxmin:sxmax,symin:symax]
+            WII_         = gpd.overlay(selectionProv[ipoly:ipoly+1], tmp, how = 'intersection', keep_geom_type=False)
+            
+            tmp = fuelCat_all.cx[sxmin:sxmax,symin:symax]
+            fuelCat_all_ = gpd.overlay(selectionProv[ipoly:ipoly+1], tmp, how = 'intersection', keep_geom_type=False)
         
             totalAreaFuelCat = fuelCat_all_.area.sum()*1.e-4
 
