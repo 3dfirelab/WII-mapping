@@ -173,13 +173,12 @@ if __name__ == '__main__':
                 
                 fuelCats.append(gdf)
 
-                print('{:.2f}'.format(ii/nn), end='\r')
-               
                 ii += 1
 
         gdf = pd.concat(fuelCats)
         #union = gdf.buffer(1).unary_union.buffer(-1)
-
+        print('shape gdf :', gfd.shape)
+        
         geom_arr = []
         # Converting geometries list to nested list of geometries
         for i in range(0, len(gdf), 10000):
