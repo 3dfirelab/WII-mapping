@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     idxclc = range(1,6)
     for iv in idxclc:
-        print('fuel cat {:d} ... '.format(iv) )
+        print('{:s}: fuel cat {:d} ... '.format(continent, iv) )
         fuelCat = gpd.read_file(indir+'fuelCategory{:d}.geojson'.format(iv))
 
         fuelCat = tools.add_AI2gdf(fuelCat,ptdx,dbox)
