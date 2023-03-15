@@ -29,7 +29,10 @@ if __name__ == '__main__':
     
     if socket.gethostname() == 'ubu':     
         flag_loopIndus = 'center'
-
+    
+    if socket.gethostname() == 'estrella':     
+        flag_loopIndus = -166
+    
     importlib.reload(tools)
     
     if continent == 'europe':
@@ -66,9 +69,9 @@ if __name__ == '__main__':
     #industrial zone
     indir = '/mnt/dataEstrella/WII/IndustrialZone/{:s}/'.format(continent)
     indusFiles = sorted(glob.glob(indir+'*.geojson'))
-    if flag_loopIndus == 'inverse': indusFiles = indusFiles[::-1]
-    if flag_loopIndus == 'center' : indusFiles = list( np.roll( np.array(indusFiles), len(indusFiles)//2) )
-
+    if flag_loopIndus == 'inverse'  : indusFiles = indusFiles[::-1]
+    elif flag_loopIndus == 'center' : indusFiles = list( np.roll( np.array(indusFiles), len(indusFiles)//2) )
+    elif type(flag_loopIndus) is int    :  indusFiles = list( np.roll( np.array(indusFiles), flag_loopIndus ))
     dirout = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
    
     if os.path.isfile(dirout+'WII.geojon'):
