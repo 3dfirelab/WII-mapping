@@ -110,7 +110,7 @@ if __name__ == '__main__':
                 if flag_onlyplot: continue
                 print('{:s} shape'.format(os.path.basename(indusFile)), end='')
 
-                WII = None
+                WII = gpd.GeoDataFrame(geometry=[])
                 indus = gpd.read_file(indusFile)
                 indus = indus.to_crs(crs_here)
 
