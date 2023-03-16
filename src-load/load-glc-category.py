@@ -90,12 +90,11 @@ def clipped_fuelCat_gdf(indir, iv, crs, xminContinent,yminContinent, xmaxContine
         geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(4326))
         #geo = geo.to_crs(crs=src.crs.data)
         coords = getFeatures(geo)
-        pdb.set_trace()
         try:
             data_, out_transform = mask(src, shapes=coords, crop=True)
         except: 
             pdb.set_trace()
-        if
+        
         #print ('fuelCat ', iv, end='')
         condition =  (data_!=fuelCatTag[iv-1][0])
         if len(fuelCatTag[iv-1]) > 1:
@@ -106,7 +105,9 @@ def clipped_fuelCat_gdf(indir, iv, crs, xminContinent,yminContinent, xmaxContine
         try:
             if not(False in data_masked.mask): return None
         except:
-            pdb.set_trace()
+            data_masked.mask = np.zeros_like(data_)
+            if not(False in data_masked.mask): return None
+             
         #print (' -- array loaded')
         # Use a generator instead of a list
         shape_gen = ((shapely.geometry.shape(s), v) for s, v in rasterio.features.shapes(data_masked, transform=out_transform))
