@@ -104,8 +104,7 @@ def clipped_fuelCat_gdf(indir, iv, crs, xminContinent,yminContinent, xmaxContine
         try:
             if not(False in data_masked.mask): return None
         except:
-            if not(False in [data_masked.mask]): return None
-
+            pdb.set_trace()
         #print (' -- array loaded')
         # Use a generator instead of a list
         shape_gen = ((shapely.geometry.shape(s), v) for s, v in rasterio.features.shapes(data_masked, transform=out_transform))
