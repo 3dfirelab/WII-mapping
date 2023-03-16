@@ -103,7 +103,7 @@ def clipped_fuelCat_gdf(indir, iv, crs, xminContinent,yminContinent, xmaxContine
        
         try:
             if not(False in data_masked.mask): return None
-        except
+        except:
             pdb.set_trace()
 
         #print (' -- array loaded')
