@@ -149,7 +149,8 @@ if __name__ == '__main__':
             if WII_tot is None: 
                 WII_tot = WII
             else:
-                WII_tot = pd.concat([WII_tot, WII])
+                if WII.shape[0]!=0:
+                    WII_tot = pd.concat([WII_tot, WII])
 
         if socket.gethostname() == 'moritz':
             WII_tot.to_file(dirout+'WII.geojon',driver='GeoJSON')

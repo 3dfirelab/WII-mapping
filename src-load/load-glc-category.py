@@ -100,8 +100,11 @@ def clipped_fuelCat_gdf(indir, iv, crs, xminContinent,yminContinent, xmaxContine
             for xx in fuelCatTag[iv-1][1:]:
                 condition &= (data_!=xx)
         data_masked = np.ma.masked_where(condition,data_)
-        
-        if not(False in data_masked.mask): return None
+       
+        try:
+            if not(False in data_masked.mask): return None
+        except
+            pdb.set_trace()
 
         #print (' -- array loaded')
         # Use a generator instead of a list
