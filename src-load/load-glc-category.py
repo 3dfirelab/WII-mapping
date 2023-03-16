@@ -104,7 +104,7 @@ def clipped_fuelCat_gdf(indir, iv, crs, xminContinent,yminContinent, xmaxContine
         try:
             if not(False in data_masked.mask): return None
         except:
-            pdb.set_trace()
+            if not(False in [data_masked.mask]): return None
 
         #print (' -- array loaded')
         # Use a generator instead of a list
