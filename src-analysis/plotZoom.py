@@ -193,7 +193,7 @@ if __name__ == '__main__':
     
     ax.set_xlim(xminHere,xmaxHere)
     ax.set_ylim(yminHere,ymaxHere)
-    ax.set_title('Industrial Area + sentinel true color image (60m)', pad=10)
+    ax.set_title('Industrial Area + sentinel2 true color image (60m)', pad=10)
     ax.set_axis_off()
 
     fontprops = fm.FontProperties(size=10)
