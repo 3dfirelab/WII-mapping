@@ -52,7 +52,7 @@ def clipped_fuelCat_raster(indir, iv, crs_here, xminContinent,yminContinent, xma
         coords = getFeatures(geo)
         data_, src_transform = mask(src, shapes=coords, crop=True)
          
-        data_out = tools.reproject_raster(data_[0], src_bounds, src_transform, geo.crs, crs_here)
+        data_out, transform_out = tools.reproject_raster(data_[0], src_bounds, src_transform, geo.crs, crs_here)
         data_ = None
         
         #plt.imshow(data_out)

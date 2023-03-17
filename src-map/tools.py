@@ -291,18 +291,18 @@ def add_AI2gdf(gdf,ptdx,dbox,PoverA=0.05):
 
 
 ###########################################################
-def reproject_raster(src_band, src_bounds, src_transform, src_crs, dst_crs ):
+def reproject_raster(src_band, src_bounds, src_transform, src_crs, dst_crs, resolution=200):
     dst_transform, width, height = calculate_default_transform(
         src_crs,
         dst_crs,
         src_band.shape[0],
         src_band.shape[1],
         *src_bounds,  # unpacks outer boundaries (left, bottom, right, top)
-        resolution=200.
+        resolution=resolution
     )
     dst_band = np.zeros([height, width])
 
-    reproject(
+    return  reproject(
         source=src_band,
         destination=dst_band,
         src_transform=src_transform,
@@ -311,7 +311,6 @@ def reproject_raster(src_band, src_bounds, src_transform, src_crs, dst_crs ):
         dst_crs=dst_crs,
         resampling=Resampling.nearest)
     
-    return dst_band
 
 
 ##########################

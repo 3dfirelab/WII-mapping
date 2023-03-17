@@ -15,11 +15,15 @@ import pyproj
 from fiona.crs import from_epsg
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 import matplotlib.font_manager as fm
+import rasterio 
+from rasterio.mask import mask
+import numpy as np 
 
 #homebrewed
 sys.path.append('../src-map/')
-#import tools
+import tools
 import mapFuelCat
+glc = importlib.import_module("load-glc-category")
 
 warnings.filterwarnings("ignore")
 
@@ -35,12 +39,48 @@ if __name__ == '__main__':
         yminAll,ymaxAll = 1400000., 5440568.
         crs_here = 'epsg:3035'
         distgroup = 5.e3
+        xminHere,xmaxHere = 3.6370e6, 3.6760e6 
+        yminHere,ymaxHere = 2.0805e6, 2.1159e6 
+        filein = '/mnt/data/WII/TrueColor/2023-03-03-00 00_2023-03-03-23 59_Sentinel-2_L2A_True_color.tiff'
     elif continent == 'asia':
         xminAll,xmaxAll = -1.315e7, -6.e4
         yminAll,ymaxAll = -1.79e6, 7.93e6
         crs_here = 'epsg:3832'
         distgroup = 1.e3
- 
+  
+    to_latlon=pyproj.Transformer.from_crs(crs_here, 'epsg:4326')
+    xmean = .5*(xminHere+xmaxHere)
+    ymean = .5*(yminHere+ymaxHere)
+    print(to_latlon.transform(ymean,xmean))
+
+    #get true color image
+    with rasterio.open(filein) as src:
+        
+        #clip
+        bb = 2000
+        bbox = shapely.geometry.box(xminHere-bb, yminHere-bb, xmaxHere+bb, ymaxHere+bb)
+        geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=crs_here)
+        geo = geo.to_crs(crs='epsg:4326')
+        coords = glc.getFeatures(geo)
+        data_, src_transform = mask(src, shapes=coords, crop=True)
+       
+        data_out = []
+        for xx in range(3):
+            band_, transform_dst = tools.reproject_raster(data_[xx], geo.total_bounds , src_transform, geo.crs, crs_here, resolution=60)
+            
+            if xx == 0: 
+                transformer = rasterio.transform.AffineTransformer(transform_dst)
+                nx,ny = band_.shape
+                dst_bounds = (*transformer.xy(0, 0), *transformer.xy(nx, ny))
+
+            data_out.append(band_)
+
+    data_out = np.array(data_out, dtype=np.uint8)
+    data_out = np.transpose(data_out,[1,2,0])
+    norm = (data_out * (255 / np.max(data_out))).astype(np.uint8)
+
+
+
     #borders
     indir = '/mnt/dataEstrella/WII/Boundaries/'
     if continent == 'europe':
@@ -86,8 +126,7 @@ if __name__ == '__main__':
         sys.exit()
 
     dirout = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
-    xminHere,xmaxHere = 3.6370e6, 3.6760e6 
-    yminHere,ymaxHere = 2.0805e6, 2.1159e6
+
 
     #plot geo
     ####
@@ -145,15 +184,16 @@ if __name__ == '__main__':
     fig = plt.figure(figsize=(10,10))
 
     ax = plt.subplot(221)
-    landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
-    graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
-    bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
+    #landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
+    #graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
+    #bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
+    ax.imshow(norm, extent=(dst_bounds[0],dst_bounds[2],dst_bounds[3],dst_bounds[1]), alpha=0.89)
 
     indusAll.cx[xminHere:xmaxHere, yminHere:ymaxHere].plot(ax=ax, facecolor='k', edgecolor='k', linewidth=.2,zorder=4)
     
     ax.set_xlim(xminHere,xmaxHere)
     ax.set_ylim(yminHere,ymaxHere)
-    ax.set_title('Industrial Area', pad=10)
+    ax.set_title('Industrial Area + sentinel true color image (60m)', pad=10)
     ax.set_axis_off()
 
     fontprops = fm.FontProperties(size=10)
