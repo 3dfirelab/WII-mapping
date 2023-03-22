@@ -53,6 +53,7 @@ if __name__ == '__main__':
     yminAll,ymaxAll = params['yminAll'], params['ymaxAll']
     crs_here        = params['crs_here']
     bufferBorder    = params['bufferBorder']
+    distgroup       = params['distgroup']
 
     #borders
     indir = '/mnt/dataEstrella/WII/Boundaries/'
