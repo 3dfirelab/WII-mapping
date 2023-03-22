@@ -56,10 +56,10 @@ def loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll):
             if fuelCat_all is None:
                 fuelCat_all = glc.clipped_fuelCat_raster(indir, iv, crs_here, xminAll, yminAll, xmaxAll, ymaxAll ) 
                 fuelCat_all.data[fuelCat_all.mask == False] = iv
-                fuelCat_all['ICat'] = iv
+                #fuelCat_all['ICat'] = iv
             else:
                 fuelCat_ = glc.clipped_fuelCat_raster(indir, iv, crs_here, xminAll, yminAll, xmaxAll, ymaxAll) 
-                fuelCat_['ICat'] = iv
+                #fuelCat_['ICat'] = iv
                 fuelCat_all.data[fuelCat_.mask == False] = iv
                 fuelCat_all.mask[fuelCat_.mask == False] = False
                 fuelCat_ = None
@@ -84,7 +84,8 @@ if __name__ == '__main__':
         yminAll,ymaxAll = -1.79e6, 7.93e6
         #xminAll,xmaxAll = -3.35e6,  -1.26e6
         #yminAll,ymaxAll = 3.32e6,  4.79e6
-        crs_here = 'epsg:3832'
+        #crs_here = 'epsg:3832'
+        crs_here = 'epsg:8859'
     
     #borders
     indir = '/mnt/dataEstrella/WII/Boundaries/'
@@ -96,6 +97,7 @@ if __name__ == '__main__':
         bordersSelection = pd.concat([bordersNUST,extraNUST])
     elif continent == 'asia':
         bordersSelection = gpd.read_file(indir+'mask_{:s}.geojson'.format(continent))
+        bordersSelection = bordersSelection.dissolve(by='SOV_A3', aggfunc='sum')
 
     landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
     landNE = landNE.to_crs(crs_here)
@@ -133,7 +135,7 @@ if __name__ == '__main__':
     if type(fuelCat_all) is gpd.geodataframe.GeoDataFrame:
         fuelCat_all.plot(ax=ax, column='rank', legend=True, cmap=colors.ListedColormap(list(color_dict.values())),zorder=4)
     else: 
-        im = ax.imshow(fuelCat_all, cmap=colors.ListedColormap(list(color_dict.values())),extent=(xminAll,xmaxAll,yminAll, ymaxAll),zorder=4,interpolation='nearest')
+        im = ax.imshow(fuelCat_all, cmap=colors.ListedColormap(list(color_dict.values())),extent=(xminAll,xmaxAll,yminAll, ymaxAll),interpolation='nearest', zorder=4)
         #legend=ep.draw_legend(
         #    im,
         #    titles=["vegetation category 1", "vegetation category 2", "vegetation category 3", "vegetation category 4", "vegetation category 5"],
@@ -141,6 +143,9 @@ if __name__ == '__main__':
         #)
         patches = [mpl.patches.Patch(color=color, label=label) for label, color in color_dict.items() ]
         ax.legend(handles=patches, bbox_to_anchor=(.45, .24), facecolor="white", prop={'size':10})
+
+        landNE_outside = gpd.overlay(landNE, bordersSelection[bordersSelection['LEVL_CODE']==0], how = 'difference')
+        landNE_outside.buffer(1.e4).plot(ax=ax, facecolor='0.9', edgecolor='None',zorder=5)
 
     ax.set_xlim(xminAll,xmaxAll)
     ax.set_ylim(yminAll,ymaxAll)

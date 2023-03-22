@@ -43,7 +43,7 @@ if __name__ == '__main__':
     elif continent == 'asia':
         xminAll,xmaxAll = -1.315e7, -6.e4
         yminAll,ymaxAll = -1.79e6, 7.93e6
-        crs_here = 'epsg:3832'
+        crs_here = 'epsg:8859'
         distgroup = 1.e3
  
     #borders
@@ -56,6 +56,7 @@ if __name__ == '__main__':
         bordersSelection = pd.concat([bordersNUST,extraNUST])
     elif continent == 'asia':
         bordersSelection = gpd.read_file(indir+'mask_{:s}.geojson'.format(continent))
+        bordersSelection = bordersSelection.dissolve(by='SOV_A3', aggfunc='sum')
 
 
     landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')

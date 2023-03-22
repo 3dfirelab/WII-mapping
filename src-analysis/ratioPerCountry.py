@@ -14,13 +14,72 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 warnings.filterwarnings("ignore")
 import pyproj
 from fiona.crs import from_epsg
+import rasterio
+from rasterio.mask import mask
 
 sys.path.append('../src-map/')
 import mapFuelCat
+import tools 
+
+def getFeatures(gdf):
+    """Function to parse features from GeoDataFrame in such a manner that rasterio wants them"""
+    import json
+    return [json.loads(gdf.to_json())['features'][0]['geometry']]
+
+def fuelCatAreaFromraster(indir, geoMask):
+
+    #print('fuel global lc')
+    fuelCatTag = []
+    fuelCatTag.append([111,113,121,123]) #1
+    fuelCatTag.append([115,116,125,126]) #2
+    fuelCatTag.append([112,114,122,124,20,30]) #3
+    fuelCatTag.append([90]) #4
+    fuelCatTag.append([100]) #5
+
+    filein = indir + 'PROBAV_LC100_global_v3.0.1_2018-conso_Discrete-Classification-map_EPSG-4326.tif'
+    crs_here = geoMask.crs 
+
+    rasterlc = []
+    reso = 1.e2
+    with rasterio.open(filein) as src:
+
+        #clip
+        geoMask = geoMask.to_crs('epsg:4326')
+        coords = getFeatures(geoMask)
+        rasterlc, src_transform = mask(src, shapes=coords, crop=True)
+        
+        transformer = rasterio.transform.AffineTransformer(src_transform)
+        _, nx,ny = rasterlc.shape
+        src_bounds = (*transformer.xy(0, 0), *transformer.xy(nx, ny))
+
+        rasterlc_m, transform_out = tools.reproject_raster(rasterlc, src_bounds, src_transform, src.crs, crs_here, resolution =reso)
+
+        #gt = src.tansform
+        dx =    transform_out[0] 
+        dy = -1*transform_out[4]  
+
+    totalArea = 0
+    data_out = []
+    for iv in range(1,6):
+        condition = (rasterlc_m==fuelCatTag[iv-1][0])
+        if len(fuelCatTag[iv-1]) > 1:
+            for xx in fuelCatTag[iv-1][1:]:
+                condition |= (rasterlc_m==xx)
+        data_out_masked = np.ma.masked_where(np.invert(condition), rasterlc_m)
+        
+        print(np.where(data_out_masked.mask==False)[0].shape[0] * dx*dy)
+        totalArea += np.where(data_out_masked.mask==False)[0].shape[0] * dx*dy
+        data_out.append(data_out_masked)
+    
+    print('---')
+    return  1.e-4*totalArea, data_out
+
+
+
 
 if __name__ == '__main__':
 
-    continent = 'europe'
+    continent = 'asia'
 
     if continent == 'europe':
         xminAll,xmaxAll = 2500000., 7400000.
@@ -29,7 +88,7 @@ if __name__ == '__main__':
     elif continent == 'asia':
         xminAll,xmaxAll = -1.315e7, -6.e4
         yminAll,ymaxAll = -1.79e6, 7.93e6
-        crs_here = 'epsg:3832'
+        crs_here = 'epsg:8859'
  
     #borders
     indir = '/mnt/dataEstrella/WII/Boundaries/'
@@ -41,14 +100,16 @@ if __name__ == '__main__':
         bordersSelection = pd.concat([bordersNUST,extraNUST],ignore_index=True)
     elif continent == 'asia':
         bordersSelection = gpd.read_file(indir+'mask_{:s}.geojson'.format(continent))
+        bordersSelection = bordersSelection.dissolve(by='SOV_A3', aggfunc='sum')
 
-        print('******')
-        print('need a conversion to polygon for fuelCat_all for asia')
-        print('or need to change totalAreaFuelCat caclulation below')
-        print('******')
-        sys.exit()
+        #print('******')
+        #print('need a conversion to polygon for fuelCat_all for asia')
+        #print('or need to change totalAreaFuelCat caclulation below')
+        #print('******')
+        #sys.exit()
 
     bordersSelection = bordersSelection.reset_index()
+
 
     landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
     landNE = landNE.to_crs(crs_here)
@@ -61,10 +122,13 @@ if __name__ == '__main__':
     #industrial zone
     indir = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
     indus = gpd.read_file(indir+'industrialZone_osmSource.geojon')
-    #FuelCat
-    idxclc, fuelCat_all = mapFuelCat.loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll)
     #WII
     WII = gpd.read_file(indir+'WII.geojon')
+    #FuelCat
+    if continent == 'europe':
+        idxclc, fuelCat_all = mapFuelCat.loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll)
+    else: 
+        fuelCat_all = None
 
     dirout = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
     
@@ -77,6 +141,7 @@ if __name__ == '__main__':
     nn = len(selection)
     for ipoly in range(len(selection)):
         print('{:05.1f} %'.format(100*ipoly/nn), end='\r')
+        sys.stdout.flush()
         sxmin, symin, sxmax, symax = selection[ipoly:ipoly+1].total_bounds
         
         tmp = indus.cx[sxmin:sxmax,symin:symax]
@@ -85,13 +150,26 @@ if __name__ == '__main__':
         tmp = WII.cx[sxmin:sxmax,symin:symax]
         WII_ = gpd.overlay(selection[ipoly:ipoly+1], tmp, how = 'intersection', keep_geom_type=False)
         
-        tmp = fuelCat_all.cx[sxmin:sxmax,symin:symax]
-        fuelCat_all_ = gpd.overlay(selection[ipoly:ipoly+1], tmp, how = 'intersection', keep_geom_type=False)
-        
-        totalAreaFuelCat = fuelCat_all_.area.sum()*1.e-4
+        if type(fuelCat_all) is gpd.GeoDataFrame :
+            tmp = fuelCat_all.cx[sxmin:sxmax,symin:symax]
+            fuelCat_all_ = gpd.overlay(selection[ipoly:ipoly+1], tmp, how = 'intersection', keep_geom_type=False)
+            totalAreaFuelCat = fuelCat_all_.area.sum()*1.e-4
 
+        else:
+            indir = '/mnt/dataEstrella/WII/CLC/'
+            totalAreaFuelCat, fuelMap = fuelCatAreaFromraster(indir, selection[ipoly:ipoly+1]) 
+
+        if totalAreaFuelCat > selection[ipoly:ipoly+1].area.sum()*1.e-4 : 
+            pdb.set_trace()
+
+        selection.loc[ipoly,'WIIAera_ha'] = WII_.area.sum()*1.e-4
+        selection.loc[ipoly,'IndusAera_ha'] = indus_.area.sum()*1.e-4
+        selection.loc[ipoly,'FuelCatAera_ha'] = totalAreaFuelCat
+        selection.loc[ipoly,'CountrySize_ha'] = selection[ipoly:ipoly+1].area.sum()*1.e-4
+        
         selection.loc[ipoly,'WIIoverIndus'] = WII_.area.sum()/indus_.area.sum()
         selection.loc[ipoly,'WIIoverFuel']  = WII_.area.sum()/(totalAreaFuelCat*1.e4)
+
 
     #plot
     #####
@@ -141,7 +219,8 @@ if __name__ == '__main__':
     graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
     #bordersSelection.buffer(-1.e4)[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
 
-    selection.plot(ax=ax,cax=cax,column='WIIoverFuel',legend=True,vmax=np.percentile(selection['WIIoverFuel'],95),zorder=2)
+    mm = selection.dropna(subset=['WIIoverFuel'])
+    mm.plot(ax=ax,cax=cax,column='WIIoverFuel',legend=True,vmax=np.percentile(mm['WIIoverFuel'],80),zorder=2)
     ax.set_xlim(xminAll,xmaxAll)
     ax.set_ylim(yminAll,ymaxAll)
     #set axis
@@ -167,6 +246,10 @@ if __name__ == '__main__':
     ax.set_title('Ratio WII Area over total Fuel Area per Country', pad=30)
     fig.savefig(dirout+'RatioWIIoverFuel.png',dpi=200)
     plt.close(fig)
+    
+    #save csv
+    #########
+    pd.DataFrame(selection.drop(columns='geometry')).to_csv(dirout+'{:s}_info_country.csv'.format(continent))
 
     #per province
     ############
