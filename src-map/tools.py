@@ -309,6 +309,7 @@ def reproject_raster(src_band, src_bounds, src_transform, src_crs, dst_crs, reso
         src_crs=src_crs,
         dst_transform=dst_transform,
         dst_crs=dst_crs,
+        dst_nodata=-999,
         resampling=Resampling.nearest)
     
 
