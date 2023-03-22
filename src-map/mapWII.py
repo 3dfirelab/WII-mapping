@@ -16,6 +16,7 @@ import numpy as np
 
 #homebrewed
 import tools
+import params
 
 warnings.filterwarnings("ignore")
 
@@ -34,7 +35,8 @@ if __name__ == '__main__':
         flag_loopIndus = -166
     
     importlib.reload(tools)
-    
+
+    '''
     if continent == 'europe':
         xminAll,xmaxAll = 2500000., 7400000.
         yminAll,ymaxAll = 1400000., 5440568.
@@ -45,7 +47,13 @@ if __name__ == '__main__':
         yminAll,ymaxAll = -1.79e6, 7.93e6
         crs_here = 'epsg:8859'
         distgroup = 1.e3
- 
+    '''
+    params = params.load_param(continent)
+    xminAll,xmaxAll = params['xminAll'], params['xmaxAll']
+    yminAll,ymaxAll = params['yminAll'], params['ymaxAll']
+    crs_here        = params['crs_here']
+    bufferBorder    = params['bufferBorder']
+
     #borders
     indir = '/mnt/dataEstrella/WII/Boundaries/'
     if continent == 'europe':

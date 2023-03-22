@@ -13,6 +13,7 @@ from fiona.crs import from_epsg
 
 #homebrewed
 import tools
+import params
 
 if __name__ == '__main__':
     
@@ -20,6 +21,7 @@ if __name__ == '__main__':
 
     importlib.reload(tools)
     
+    '''
     if continent == 'europe':
         xminAll,xmaxAll = 2500000., 7400000.
         yminAll,ymaxAll = 1400000., 5440568.
@@ -30,6 +32,13 @@ if __name__ == '__main__':
         yminAll,ymaxAll = -1.79e6, 7.93e6
         crs_here = 'epsg:8859'
         bufferBorder = -10000
+    '''
+    params = params.load_param(continent)
+    xminAll,xmaxAll = params['xminAll'], params['xmaxAll']
+    yminAll,ymaxAll = params['yminAll'], params['ymaxAll']
+    crs_here        = params['crs_here']
+    bufferBorder    = params['bufferBorder']
+
     #borders
     indir = '/mnt/dataEstrella/WII/Boundaries/'
     if continent == 'europe':

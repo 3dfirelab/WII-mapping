@@ -20,6 +20,7 @@ from rasterio.mask import mask
 sys.path.append('../src-map/')
 import mapFuelCat
 import tools 
+import params
 
 def getFeatures(gdf):
     """Function to parse features from GeoDataFrame in such a manner that rasterio wants them"""
@@ -81,7 +82,8 @@ if __name__ == '__main__':
 
     continent = 'asia'
 
-    if continent == 'europe':
+   '''
+   if continent == 'europe':
         xminAll,xmaxAll = 2500000., 7400000.
         yminAll,ymaxAll = 1400000., 5440568.
         crs_here = 'epsg:3035'
@@ -89,6 +91,13 @@ if __name__ == '__main__':
         xminAll,xmaxAll = -1.315e7, -6.e4
         yminAll,ymaxAll = -1.79e6, 7.93e6
         crs_here = 'epsg:8859'
+    '''
+    params = params.load_param(continent)
+    xminAll,xmaxAll = params['xminAll'], params['xmaxAll']
+    yminAll,ymaxAll = params['yminAll'], params['ymaxAll']
+    crs_here        = params['crs_here']
+    bufferBorder    = params['bufferBorder']
+
  
     #borders
     indir = '/mnt/dataEstrella/WII/Boundaries/'

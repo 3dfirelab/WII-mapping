@@ -42,7 +42,10 @@ if __name__ == '__main__':
         xminHere,xmaxHere = 3.6370e6, 3.6760e6 
         yminHere,ymaxHere = 2.0805e6, 2.1159e6 
         filein = '/mnt/data/WII/TrueColor/2023-03-03-00 00_2023-03-03-23 59_Sentinel-2_L2A_True_color.tiff'
+    
     elif continent == 'asia':
+        print('********* not set -- stop here')
+        sys.exit()
         xminAll,xmaxAll = -1.315e7, -6.e4
         yminAll,ymaxAll = -1.79e6, 7.93e6
         crs_here = 'epsg:3832'

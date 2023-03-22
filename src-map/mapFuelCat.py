@@ -17,6 +17,7 @@ import pyproj
 from fiona.crs import from_epsg
 
 #homebrewed
+import params
 import tools
 sys.path.append('../src-load/')
 glc = importlib.import_module("load-glc-category")
@@ -74,7 +75,8 @@ if __name__ == '__main__':
     
     importlib.reload(tools)
     importlib.reload(glc)
-    
+   
+    '''
     if continent == 'europe':
         xminAll,xmaxAll = 2500000., 7400000.
         yminAll,ymaxAll = 1400000., 5440568.
@@ -86,7 +88,14 @@ if __name__ == '__main__':
         #yminAll,ymaxAll = 3.32e6,  4.79e6
         #crs_here = 'epsg:3832'
         crs_here = 'epsg:8859'
-    
+    '''
+    params = params.load_param(continent)
+    xminAll,xmaxAll = params['xminAll'], params['xmaxAll']
+    yminAll,ymaxAll = params['yminAll'], params['ymaxAll']
+    crs_here        = params['crs_here']
+    bufferBorder    = params['bufferBorder']
+
+
     #borders
     indir = '/mnt/dataEstrella/WII/Boundaries/'
     if continent == 'europe':
