@@ -10,8 +10,8 @@ def load_param(continent):
         distgroup = 5.e3
 
     elif continent == 'asia':
-        xminAll,xmaxAll = -1.315e7, -6.e4
-        yminAll,ymaxAll = -1.79e6, 7.93e6
+        xminAll,xmaxAll = -1.057e7, -2.5e5
+        yminAll,ymaxAll = -1.74e6, 6.66e6
         crs_here = 'epsg:8859'
         bufferBorder = -10000
         distgroup = 1.e3

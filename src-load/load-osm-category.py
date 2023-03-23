@@ -20,12 +20,14 @@ if __name__ == '__main__':
     continent = 'asia'
     
     importlib.reload(contries_mod)
-    from countries import europe, asia
+    from countries import europe, asia, namerica
     
     if continent == 'europe': 
         countries_selection = europe
     elif continent == 'asia': 
         countries_selection = asia
+    elif continent == 'namerica': 
+        countries_selection = namerica
     
     warnings.filterwarnings("ignore")
 

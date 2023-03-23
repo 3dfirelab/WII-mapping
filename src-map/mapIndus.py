@@ -10,6 +10,7 @@ import importlib
 import warnings
 import pyproj
 from fiona.crs import from_epsg
+import pdb 
 
 #homebrewed
 import tools
@@ -17,7 +18,7 @@ import params
 
 if __name__ == '__main__':
     
-    continent = 'europe'
+    continent = 'asia'
 
     importlib.reload(tools)
     
@@ -49,11 +50,13 @@ if __name__ == '__main__':
         bordersSelection = pd.concat([bordersNUST,extraNUST])
     elif continent == 'asia':
         bordersSelection = gpd.read_file(indir+'mask_{:s}.geojson'.format(continent))
-        bordersSelection = bordersSelection.dissolve(by='SOV_A3', aggfunc='sum')
+        bordersSelection = bordersSelection[['SOV_A3', 'geometry', 'LEVL_CODE']]
+        bordersSelection = bordersSelection.dissolve(by='SOV_A3', aggfunc='sum').reset_index()
+    bordersSelection = bordersSelection.to_crs(crs_here)
 
     landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
     landNE = landNE.to_crs(crs_here)
-    
+  
     #load graticule
     gratreso = 15
     graticule = gpd.read_file(indir+'NaturalEarth_graticules/ne_110m_graticules_{:d}.shp'.format(gratreso))
@@ -94,7 +97,8 @@ if __name__ == '__main__':
     indusAll.plot(ax=ax, facecolor='k', edgecolor='k', linewidth=.2,zorder=4)
     ax.set_xlim(xminAll,xmaxAll)
     ax.set_ylim(yminAll,ymaxAll)
-        #set axis
+    
+    #set axis
     bbox = shapely.geometry.box(xminAll, yminAll, xmaxAll, ymaxAll)
     geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
     geo['geometry'] = geo.boundary

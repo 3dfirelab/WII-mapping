@@ -15,19 +15,24 @@ import countries as contries_mod
 
 if __name__ == '__main__':
 
-    continent = 'asia'
+    continent = 'namerica'
 
     print('continent = ', continent)
 
     importlib.reload(contries_mod)
-    from countries import europe, asia
+    from countries import europe, asia, namerica
     
     if continent == 'europe': 
         countries_selection = europe
+        continent_url = countries_selection
     elif continent == 'asia': 
         countries_selection = asia
+        continent_url = countries_selection
+    elif continent == 'namerica': 
+        countries_selection = namerica
+        continent_url = 'north-america'
 
-    template_url = 'https://download.geofabrik.de/{:s}'.format(continent)+'/{:s}-latest.osm.pbf'
+    template_url = 'https://download.geofabrik.de/{:s}'.format(continent_url)+'/{:s}-latest.osm.pbf'
     dirout = '/mnt/dataEstrella/WII/OSM/PerCountry-{:s}/'.format(continent)
 
     #download file
@@ -52,6 +57,10 @@ if __name__ == '__main__':
         indir = '/mnt/dataEstrella/WII/Boundaries//'
         borders = gpd.read_file(indir+'NaturalEarth_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
         xminContinent,yminContinent, xmaxContinent,ymaxContinent = [28.7, -14.9, 188, 87.]
+    elif continent == 'namerica':
+        indir = '/mnt/dataEstrella/WII/Boundaries//'
+        borders = gpd.read_file(indir+'NaturalEarth_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
+        xminContinent,yminContinent, xmaxContinent,ymaxContinent = [-180, -13.0, -21, 90.]
     
 
     countries_here = np.array(countries_selection)
@@ -84,7 +93,7 @@ if __name__ == '__main__':
                 else: 
                     borders_ = borders[(borders['LEVL_CODE']==1)&(borders['CNTR_CODE']==country_code)&(borders['NUTS_ID']==country_code2)]
             
-            elif continent == 'asia':
+            elif (continent == 'asia') | (continent=='namerica'):
                 if len(country_code.split(','))>1:
                     country_code_ = country_code.split(',')
                     condition = (borders['SOV_A3']==country_code_[0])
@@ -100,7 +109,6 @@ if __name__ == '__main__':
         else: 
             borders_ = None
 
-        
         if borders_ is None : 
             extent_ll=[[xminContinent,xmaxContinent,yminContinent,ymaxContinent]]
         else: 

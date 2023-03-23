@@ -1,3 +1,9 @@
+namerica = [['Canada','CAN',None],
+            ['Mexico','MEX',None],
+            ['Greenland','DN1',None],
+            ['Us','US1', None],
+            ]
+
 asia = [
         ['Afghanistan', 'AFG', None ],
         ['Armenia', 'ARM', None ],  
