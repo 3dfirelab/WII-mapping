@@ -17,7 +17,7 @@ import countries as contries_mod
 
 if __name__ == '__main__':
    
-    continent = 'asia'
+    continent = 'namerica'
     
     importlib.reload(contries_mod)
     from countries import europe, asia, namerica
