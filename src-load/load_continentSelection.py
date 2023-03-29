@@ -13,26 +13,36 @@ import shutil
 import warnings
 import importlib 
 
+#homebrwed
 import countries as contries_mod
-
+sys.path.append('../src-map/')
+import params
 
 if __name__ == '__main__':
-    
-    continent = 'asia'
+   
+    importlib.reload(params)
+    continent = 'namerica'
     
     print('continent = ', continent)
 
     importlib.reload(contries_mod)
-    from countries import europe, asia
-    
+    from countries import europe, asia, namerica
     if continent == 'europe': 
         countries_selection = np.array(europe)
-        crs_here = 'epsg:3035'
 
     elif continent == 'asia': 
         countries_selection = np.array(asia)
-        crs_here = 'epsg:3832'
- 
+    
+    elif continent == 'namerica': 
+        countries_selection = namerica
+    countries_selection = np.array(countries_selection)
+
+    params = params.load_param(continent)
+    xminAll,xmaxAll = params['xminAll'], params['xmaxAll']
+    yminAll,ymaxAll = params['yminAll'], params['ymaxAll']
+    crs_here        = params['crs_here']
+    bufferBorder    = params['bufferBorder']
+
     indir = '/mnt/dataEstrella/WII/Boundaries/'
     bordersNE = gpd.read_file(indir+'NaturalEarth_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
     

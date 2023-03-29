@@ -18,7 +18,7 @@ import params
 
 if __name__ == '__main__':
     
-    continent = 'asia'
+    continent = 'namerica'
 
     importlib.reload(tools)
     
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         extraNUTS = gpd.read_file(indir+'noNUTS.geojson')
         extraNUST = extraNUTS.to_crs(crs_here)
         bordersSelection = pd.concat([bordersNUST,extraNUST])
-    elif continent == 'asia':
+    elif (continent == 'asia') | (continent == 'namerica'): 
         bordersSelection = gpd.read_file(indir+'mask_{:s}.geojson'.format(continent))
         bordersSelection = bordersSelection[['SOV_A3', 'geometry', 'LEVL_CODE']]
         bordersSelection = bordersSelection.dissolve(by='SOV_A3', aggfunc='sum').reset_index()

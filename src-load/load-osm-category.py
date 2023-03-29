@@ -11,6 +11,7 @@ import glob
 import shutil
 import warnings
 import importlib 
+import pdb 
 
 #homebrwed
 import countries as contries_mod
@@ -87,6 +88,7 @@ if __name__ == '__main__':
             except: 
                     print('  {:s} {:s}  could not open osm file    '.format(country, os.path.basename(osmfile_)) )
                     indus = None
+                    pdb.set_trace()
                     continue
 
             if indus is None: 

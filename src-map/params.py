@@ -15,7 +15,16 @@ def load_param(continent):
         crs_here = 'epsg:8859'
         bufferBorder = -10000
         distgroup = 1.e3
-   
+    
+    elif continent == 'namerica':
+        xminAll,xmaxAll = -4.61e6,  2.62e6
+        yminAll,ymaxAll = -4.19e6,  4.18e6
+        crs_here = '+proj=laea +lon_0=-447.19 +lat_0=49.57 +datum=WGS84 +units=m +no_defs'
+        #from https://projectionwizard.org/#
+
+        bufferBorder = -10000
+        distgroup = 1.e3
+
     params = {'xminAll': xminAll,
               'xmaxAll': xmaxAll, 
               'yminAll': yminAll,
