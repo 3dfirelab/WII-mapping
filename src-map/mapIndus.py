@@ -85,6 +85,11 @@ if __name__ == '__main__':
                 indusAll = pd.concat([indusAll,indus])
 
         indusAll.to_file(dirout+'industrialZone_osmSource.geojon',driver='GeoJSON')
+
+        '''
+        need to find a trick to save crs for namerica as it is not an epsg code
+        saving in geojson reset it to lalon WGS84
+        '''
     else: 
         indusAll = gpd.read_file(dirout+'industrialZone_osmSource.geojon')
 
@@ -100,20 +105,20 @@ if __name__ == '__main__':
     
     #set axis
     bbox = shapely.geometry.box(xminAll, yminAll, xmaxAll, ymaxAll)
-    geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+    geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=indusAll.crs)
     geo['geometry'] = geo.boundary
     ptsEdge =  gpd.overlay(graticule, geo, how = 'intersection', keep_geom_type=False)
     
     lline = shapely.geometry.LineString([[xminAll,ymaxAll],[xmaxAll,ymaxAll]])
-    geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+    geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=indusAll.crs)
     ptsEdgelon =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
     
     ax.xaxis.set_ticks(ptsEdgelon.geometry.centroid.x)
-    ax.xaxis.set_ticklabels(ptsEdgelon.display)
+    ax.xaxis.set_ticklabels(ptsEdgelon.display, rotation=33)
     ax.xaxis.tick_top()
     
     lline = shapely.geometry.LineString([[xminAll,yminAll],[xminAll,ymaxAll]])
-    geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+    geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=indusAll.crs)
     ptsEdgelat =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
 
     ax.yaxis.set_ticks(ptsEdgelat.geometry.centroid.y)
