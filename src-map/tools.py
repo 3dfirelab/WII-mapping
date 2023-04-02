@@ -19,6 +19,16 @@ from rasterio.warp import calculate_default_transform, reproject, Resampling
 sys.path.append('../src-load/')
 glc = importlib.import_module("load-glc-category")
 
+##########################
+def my_read_file(filepath):
+    if os.path.isfile(filepath.replace('.geojson','.prj')):
+        tmp = gpd.read_file(filepath)
+        with open(filepath.replace('.geojson','.prj'),'r'):
+            lines = f.readlines()
+        tmp.crs = {'init': lines[0]}
+    else:
+        return gpd.read_file(filepath)
+
 
 ##########################
 def cpu_count():
