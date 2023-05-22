@@ -64,7 +64,7 @@ if __name__ == '__main__':
         extraNUST = extraNUTS.to_crs(crs_here)
         bordersSelection = pd.concat([bordersNUST,extraNUST])
     elif continent == 'asia':
-        bordersSelection = gpd.read_file(indir+'mask_{:s}.geojson'.format(continent))
+        bordersSelection = tools.my_read_file(indir+'mask_{:s}.geojson'.format(continent))
         bordersSelection = bordersSelection[['SOV_A3', 'geometry', 'LEVL_CODE']]
         bordersSelection = bordersSelection.dissolve(by='SOV_A3', aggfunc='sum').reset_index()
     bordersSelection = bordersSelection.to_crs(crs_here)

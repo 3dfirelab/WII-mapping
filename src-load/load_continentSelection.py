@@ -17,11 +17,13 @@ import importlib
 import countries as contries_mod
 sys.path.append('../src-map/')
 import params
+import tools
 
 if __name__ == '__main__':
    
     importlib.reload(params)
     continent = 'namerica'
+    dir_data = tools.get_dirData()
     
     print('continent = ', continent)
 
@@ -43,7 +45,7 @@ if __name__ == '__main__':
     crs_here        = params['crs_here']
     bufferBorder    = params['bufferBorder']
 
-    indir = '/mnt/dataEstrella/WII/Boundaries/'
+    indir = '{:s}Boundaries/'.format(dir_data)
     bordersNE = gpd.read_file(indir+'NaturalEarth_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
     
     continentMask = None
@@ -66,4 +68,7 @@ if __name__ == '__main__':
     continentMask = continentMask.to_crs(crs_here)
     continentMask['LEVL_CODE'] = 0
     continentMask.to_file(indir+'mask_{:s}.geojson'.format(continent),driver='GeoJSON')
-
+    
+    if continentMask.crs.to_epsg() is None: 
+        with open(indir+'mask_{:s}.prj'.format(continent),'w') as f:
+            f.write(continentMask.crs.to_wkt())

@@ -16,6 +16,7 @@ import earthpy.plot as ep
 import pyproj
 from fiona.crs import from_epsg
 import socket
+import pdb 
 
 #homebrewed
 import params
@@ -24,7 +25,7 @@ sys.path.append('../src-load/')
 glc = importlib.import_module("load-glc-category")
 
 
-def loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll):
+def loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll,bordersSelection):
 
     idxclc = range(1,6)
     
@@ -57,11 +58,11 @@ def loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll):
         for iv in idxclc:  
             print(iv)
             if fuelCat_all is None:
-                fuelCat_all = glc.clipped_fuelCat_raster(indir, iv, crs_here, xminAll, yminAll, xmaxAll, ymaxAll ) 
+                fuelCat_all = glc.clipped_fuelCat_raster(indir, iv, crs_here, xminAll, yminAll, xmaxAll, ymaxAll,bordersSelection ) 
                 fuelCat_all.data[fuelCat_all.mask == False] = iv
                 #fuelCat_all['ICat'] = iv
             else:
-                fuelCat_ = glc.clipped_fuelCat_raster(indir, iv, crs_here, xminAll, yminAll, xmaxAll, ymaxAll) 
+                fuelCat_ = glc.clipped_fuelCat_raster(indir, iv, crs_here, xminAll, yminAll, xmaxAll, ymaxAll,bordersSelection) 
                 #fuelCat_['ICat'] = iv
                 fuelCat_all.data[fuelCat_.mask == False] = iv
                 fuelCat_all.mask[fuelCat_.mask == False] = False
@@ -78,6 +79,7 @@ if __name__ == '__main__':
     
     importlib.reload(tools)
     importlib.reload(glc)
+    importlib.reload(params)
   
     dir_data = tools.get_dirData()
 
@@ -110,7 +112,7 @@ if __name__ == '__main__':
         extraNUST = extraNUTS.to_crs(crs_here)
         bordersSelection = pd.concat([bordersNUST,extraNUST])
     elif (continent == 'asia') | (continent == 'namerica'): 
-        bordersSelection = gpd.read_file(indir+'mask_{:s}.geojson'.format(continent))
+        bordersSelection = tools.my_read_file(indir+'mask_{:s}.geojson'.format(continent))
         bordersSelection = bordersSelection[['SOV_A3', 'geometry', 'LEVL_CODE']]
         bordersSelection = bordersSelection.dissolve(by='SOV_A3', aggfunc='sum').reset_index()
     bordersSelection = bordersSelection.to_crs(crs_here)
@@ -132,10 +134,10 @@ if __name__ == '__main__':
                   'vegetation category 3':colorCat[2],
                   'vegetation category 4':colorCat[3],
                   'vegetation category 5':colorCat[4], }
-    
-    idxclc, fuelCat_all = loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll)
+   
+    idxclc, fuelCat_all = loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll,bordersSelection)
            
-        #map to crs_here
+    #map to crs_here
 
     #plot
     
@@ -146,7 +148,8 @@ if __name__ == '__main__':
     ax = plt.subplot(111)
     landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
     graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
-    bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
+    bordersSelection.buffer(bufferBorder)[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
+    #bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
 
     if type(fuelCat_all) is gpd.geodataframe.GeoDataFrame:
         fuelCat_all.plot(ax=ax, column='rank', legend=True, cmap=colors.ListedColormap(list(color_dict.values())),zorder=4)

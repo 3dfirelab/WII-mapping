@@ -14,6 +14,7 @@ from rasterio.mask import mask
 import pdb 
 from multiprocessing import Pool, cpu_count
 import warnings
+import json
 
 #homebrewed
 sys.path.append('../src-map/')
@@ -22,10 +23,10 @@ import tools
 
 def getFeatures(gdf):
     """Function to parse features from GeoDataFrame in such a manner that rasterio wants them"""
-    import json
-    return [json.loads(gdf.to_json())['features'][0]['geometry']]
+    return [ json.loads(gdf.to_json())['features'][ii]['geometry']  for ii in range(len(gdf)) ]
 
-def clipped_fuelCat_raster(indir, iv, crs_here, xminContinent,yminContinent, xmaxContinent,ymaxContinent):
+def clipped_fuelCat_raster(indir, iv, crs_here, xminContinent,yminContinent, xmaxContinent,ymaxContinent, bordersSelection):
+    warnings.simplefilter(action='ignore', category=FutureWarning)
         
     to_latlon = pyproj.Transformer.from_crs(crs_here, 'epsg:4326')
     lowerCorner = to_latlon.transform(xminContinent, yminContinent)
@@ -46,14 +47,21 @@ def clipped_fuelCat_raster(indir, iv, crs_here, xminContinent,yminContinent, xma
     with rasterio.open(filein) as src:
         
         #clip
-        bbox = shapely.geometry.box(lowerCorner[1], lowerCorner[0], upperCorner[1], upperCorner[0])
-        geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(4326))
+        #bbox = shapely.geometry.box(lowerCorner[1], lowerCorner[0], upperCorner[1], upperCorner[0])
+        bbox = gpd.clip(bordersSelection,(xminContinent,yminContinent, xmaxContinent,ymaxContinent)).to_crs('epsg:4326')
+        geo = gpd.GeoDataFrame({'geometry': bbox.geometry}, index=range(len(bbox)),) 
+        
         #geo = geo.to_crs(crs=src.crs.data)
         coords = getFeatures(geo)
         data_, src_transform = mask(src, shapes=coords, crop=True)
-         
-        data_out, transform_out = tools.reproject_raster(data_[0], src_bounds, src_transform, geo.crs, crs_here)
+        
+        data_out, transform_out = tools.reproject_raster(data_[0], src_bounds, src_transform, geo.crs, crs_here,)
         data_ = None
+        
+        rev = ~transform_out # inverse transformation
+        jjmin, iimin = rev*(xminContinent,ymaxContinent)
+        jjmax, iimax = rev*(xmaxContinent,yminContinent)
+        data_out = data_out[int(np.round(iimin,0)):int(np.round(iimax,0)),int(np.round(jjmin,0)):int(np.round(jjmax,0))]
         
         #plt.imshow(data_out)
         #plt.show()
