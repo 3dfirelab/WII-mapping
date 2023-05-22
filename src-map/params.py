@@ -17,9 +17,12 @@ def load_param(continent):
         distgroup = 1.e3
     
     elif continent == 'namerica':
-        xminAll,xmaxAll = -4.61e6,  2.62e6
-        yminAll,ymaxAll = -4.19e6,  4.18e6
-        crs_here = '+proj=laea +lon_0=-447.19 +lat_0=49.57 +datum=WGS84 +units=m +no_defs'
+        xminAll,xmaxAll = 1.95e6,  9.06e6
+        yminAll,ymaxAll = -2.98e6,  5.90e6
+        crs_here = 'epsg:3347'
+        #xminAll,xmaxAll = -4.61e6,  2.62e6
+        #yminAll,ymaxAll = -4.19e6,  4.18e6
+        #crs_here = '+proj=laea +lon_0=-447.19 +lat_0=49.57 +datum=WGS84 +units=m +no_defs'
         #from https://projectionwizard.org/#
 
         bufferBorder = -10000

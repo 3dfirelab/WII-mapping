@@ -88,7 +88,8 @@ if __name__ == '__main__':
     elif flag_loopIndus == 'center' : indusFiles = list( np.roll( np.array(indusFiles), len(indusFiles)//2) )
     elif type(flag_loopIndus) is int    :  indusFiles = list( np.roll( np.array(indusFiles), flag_loopIndus ))
     dirout = '{:s}Maps-Product/{:s}/'.format(dir_data,continent)
-   
+    tools.ensure_dir(dirout+'WII-perTyle/')
+
     if os.path.isfile(dirout+'WII.geojon'):
         print ('load WII ...')
         WII = gpd.read_file(dirout+'WII.geojon')

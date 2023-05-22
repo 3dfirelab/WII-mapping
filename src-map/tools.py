@@ -21,6 +21,14 @@ sys.path.append('../src-load/')
 glc = importlib.import_module("load-glc-category")
 
 
+
+########################
+def ensure_dir(f):
+    d = os.path.dirname(f)
+    if not os.path.exists(d):
+        os.makedirs(d)
+
+########################
 def get_dirData():
     if socket.gethostname() == 'europa':
         dir_data = '/home/paugam/Data/WII/'
