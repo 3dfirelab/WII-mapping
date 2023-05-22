@@ -19,6 +19,7 @@ import params
 if __name__ == '__main__':
     
     continent = 'namerica'
+    dir_data = tools.get_dirData()
 
     importlib.reload(tools)
     
@@ -41,7 +42,7 @@ if __name__ == '__main__':
     bufferBorder    = params['bufferBorder']
 
     #borders
-    indir = '/mnt/dataEstrella/WII/Boundaries/'
+    indir = '{:s}Boundaries/'.format(dir_data)
     if continent == 'europe':
         bordersNUTS = gpd.read_file(indir+'NUTS/NUTS_RG_01M_2021_4326.geojson')
         bordersNUST = bordersNUTS.to_crs(crs_here)
@@ -63,10 +64,10 @@ if __name__ == '__main__':
     graticule = graticule.to_crs(crs_here)
 
     #industrial zon
-    indir = '/mnt/dataEstrella/WII/IndustrialZone/{:s}/'.format(continent)
+    indir = '{:s}IndustrialZone/{:s}/'.format(dir_data,continent)
     indusFiles = sorted(glob.glob(indir+'*.geojson'))
 
-    dirout = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
+    dirout = '{:s}Maps-Product/{:s}/'.format(dir_data,continent)
     
     if not(os.path.isfile(dirout+'industrialZone_osmSource.geojon')):
         indusAll = None

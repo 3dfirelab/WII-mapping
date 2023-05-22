@@ -22,7 +22,10 @@ warnings.filterwarnings("ignore")
 
 if __name__ == '__main__':
 
-    continent = 'asia'
+    
+    continent = 'namerica'
+    dir_data = tools.get_dirData()
+
     flag_onlyplot = False
     flag_loopIndus = ''
     if socket.gethostname() == 'pc70682': 
@@ -56,7 +59,7 @@ if __name__ == '__main__':
     distgroup       = params['distgroup']
 
     #borders
-    indir = '/mnt/dataEstrella/WII/Boundaries/'
+    indir = '{:s}Boundaries/'.format(dir_data)
     if continent == 'europe':
         bordersNUTS = gpd.read_file(indir+'NUTS/NUTS_RG_01M_2021_4326.geojson')
         bordersNUST = bordersNUTS.to_crs(crs_here)
@@ -78,13 +81,14 @@ if __name__ == '__main__':
     graticule = graticule.to_crs(crs_here)
 
     #industrial zone
-    indir = '/mnt/dataEstrella/WII/IndustrialZone/{:s}/'.format(continent)
+    indir = '{:s}IndustrialZone/{:s}/'.format(dir_data,continent)
     indusFiles = sorted(glob.glob(indir+'*.geojson'))
     if flag_loopIndus == 'inverse'  : indusFiles = indusFiles[::-1]
     elif flag_loopIndus == 'center' : indusFiles = list( np.roll( np.array(indusFiles), len(indusFiles)//2) )
     elif type(flag_loopIndus) is int    :  indusFiles = list( np.roll( np.array(indusFiles), flag_loopIndus ))
-    dirout = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
-   
+    dirout = '{:s}Maps-Product/{:s}/'.format(dir_data,continent)
+    tools.ensure_dir(dirout+'WII-perTyle/')
+
     if os.path.isfile(dirout+'WII.geojon'):
         print ('load WII ...')
         WII = gpd.read_file(dirout+'WII.geojon')
@@ -95,7 +99,7 @@ if __name__ == '__main__':
             #CLC cat for europe
             print('load clc ...', end='')
             sys.stdout.flush()
-            indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/{:s}/'.format(continent)
+            indir = '{:s}FuelCategories-CLC/{:s}/'.format(dir_data,continent)
             #idxclc = [1]
             #print('  *** warning: only load cat 1 ***' )
             idxclc = range(1,6)
@@ -106,7 +110,8 @@ if __name__ == '__main__':
                 fuelCat_all.append(fuelCat_)
             print(' done')
    
-        elif continent == 'asia':
+        else:
+        #elif continent == 'asia':
             idxclc = range(1,6)
             fuelCat_all = [None]*len(idxclc)
 
@@ -147,7 +152,7 @@ if __name__ == '__main__':
                 #plt.show()
                 #sys.exit()
 
-                indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/'
+                indir = '{:s}FuelCategories-CLC/'.format(dir_data)
 
                 for iv in idxclc:
                     WII = tools.buildWII(WII, iv, fuelCat_all[iv-1], indus, continent)
