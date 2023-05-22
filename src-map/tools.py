@@ -14,10 +14,20 @@ import warnings
 import pyproj
 import importlib 
 from rasterio.warp import calculate_default_transform, reproject, Resampling
+import socket
 
 #homebrwed
 sys.path.append('../src-load/')
 glc = importlib.import_module("load-glc-category")
+
+
+def get_dirData():
+    if socket.gethostname() == 'europa':
+        dir_data = '/home/paugam/Data/WII/'
+    else:
+        dir_data = '/mnt/dataEstrella/WII/'
+    return dir_data
+
 
 ##########################
 def my_read_file(filepath):

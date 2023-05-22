@@ -15,6 +15,7 @@ import numpy as np
 import earthpy.plot as ep
 import pyproj
 from fiona.crs import from_epsg
+import socket
 
 #homebrewed
 import params
@@ -31,7 +32,7 @@ def loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll):
         #CLC cat
         print('load clc ...', end='')
         sys.stdout.flush()
-        indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/{:s}/'.format(continent)
+        indir = '{:s}FuelCategories-CLC/{:s}/'.format(dir_data,continent)
         #idxclc = [1]
         #print('  *** warning: only load cat 1 ***' )
         fuelCat_all = []
@@ -46,8 +47,9 @@ def loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll):
         fuelCat_all = pd.concat(fuelCat_all)
         print(' done')
 
-    elif continent == 'asia':
-        indir = '/mnt/dataEstrella/WII/CLC/'
+    else: 
+    #elif continent == 'asia':
+        indir = '{:s}CLC/'.format(dir_data)
         to_latlon = pyproj.Transformer.from_crs(crs_here, 'epsg:4326')
         lowerCorner = to_latlon.transform(xminAll, yminAll)
         upperCorner = to_latlon.transform(xmaxAll, ymaxAll)
@@ -71,11 +73,14 @@ def loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll):
 
 if __name__ == '__main__':
     
-    continent = 'asia'
+    #continent = 'asia'
+    continent = 'namerica'
     
     importlib.reload(tools)
     importlib.reload(glc)
-   
+  
+    dir_data = tools.get_dirData()
+
     '''
     if continent == 'europe':
         xminAll,xmaxAll = 2500000., 7400000.
@@ -97,14 +102,14 @@ if __name__ == '__main__':
 
 
     #borders
-    indir = '/mnt/dataEstrella/WII/Boundaries/'
+    indir = '{:s}Boundaries/'.format(dir_data)
     if continent == 'europe':
         bordersNUTS = gpd.read_file(indir+'NUTS/NUTS_RG_01M_2021_4326.geojson')
         bordersNUST = bordersNUTS.to_crs(crs_here)
         extraNUTS = gpd.read_file(indir+'noNUTS.geojson')
         extraNUST = extraNUTS.to_crs(crs_here)
         bordersSelection = pd.concat([bordersNUST,extraNUST])
-    elif continent == 'asia':
+    elif (continent == 'asia') | (continent == 'namerica'): 
         bordersSelection = gpd.read_file(indir+'mask_{:s}.geojson'.format(continent))
         bordersSelection = bordersSelection[['SOV_A3', 'geometry', 'LEVL_CODE']]
         bordersSelection = bordersSelection.dissolve(by='SOV_A3', aggfunc='sum').reset_index()
@@ -119,7 +124,7 @@ if __name__ == '__main__':
     graticule = graticule.to_crs(crs_here)
 
 
-    dirout = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
+    dirout = '{:s}Maps-Product/{:s}/'.format(dir_data,continent)
     
     colorCat=['darkgreen', 'fuchsia', 'gold', 'tomato' ,'teal']
     color_dict = {'vegetation category 1':colorCat[0], 
