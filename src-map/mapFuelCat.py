@@ -72,7 +72,11 @@ def loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll):
 
 
 if __name__ == '__main__':
-    
+   
+    '''
+    only plotting if out of europe
+    '''
+
     #continent = 'asia'
     continent = 'namerica'
     

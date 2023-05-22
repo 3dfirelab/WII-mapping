@@ -177,7 +177,7 @@ def buildWII(WII, iv, fuelCat, indus, continent):
         if type(fuelCat) is gpd.geodataframe.GeoDataFrame:
             fuelCat_ = fuelCat.cx[xmin-bb:xmax+bb, ymin-bb:ymax+bb]
         else: 
-            indir = '/mnt/dataEstrella/WII/CLC/'
+            indir = '{:s}CLC/'.format(get_dirData())
             to_latlon = pyproj.Transformer.from_crs(indus_.crs, 'epsg:4326')
             lowerCorner = to_latlon.transform(xmin-bb, ymin-bb)
             upperCorner = to_latlon.transform(xmax+bb, ymax+bb)

@@ -18,7 +18,11 @@ import tools
 
 if __name__ == '__main__':
     importlib.reload(tools)
-   
+
+    '''
+    only work for europe
+    '''
+
     continent = 'europe'
     xminAll,xmaxAll = 2500000., 7400000.
     yminAll,ymaxAll = 1400000., 5440568.
