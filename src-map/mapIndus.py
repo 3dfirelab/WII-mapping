@@ -85,16 +85,15 @@ if __name__ == '__main__':
                 indusAll = pd.concat([indusAll,indus])
 
         indusAll.to_file(dirout+'industrialZone_osmSource.geojon',driver='GeoJSON')
-        if 'epsg' not in indusAll.crs: 
-            with open((dirout+'industrialZone_osmSource.prj','w') as f:
-                f.write(indusAll.crs.to_wkt()
-
+        if indusAll.crs.to_epsg() is None: 
+            with open(dirout+'industrialZone_osmSource.prj','w') as f:
+                f.write(indusAll.crs.to_wkt())
         '''
         need to find a trick to save crs for namerica as it is not an epsg code
         saving in geojson reset it to lalon WGS84
         '''
     else: 
-        indusAll = gpd.read_file(dirout+'industrialZone_osmSource.geojon')
+        indusAll = tools.my_read_file(dirout+'industrialZone_osmSource.geojon')
 
     fig = plt.figure(figsize=(10,8))
     ax = plt.subplot(111)
