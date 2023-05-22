@@ -25,7 +25,7 @@ def get_dirData():
     if socket.gethostname() == 'europa':
         dir_data = '/home/paugam/Data/WII/'
     else:
-        dir_data = '/mnt/dataEstrella/WII/'
+        dir_data = '/mnt/dataEuropa/WII/'
     return dir_data
 
 
