@@ -40,6 +40,7 @@ if __name__ == '__main__':
     yminAll,ymaxAll = params['yminAll'], params['ymaxAll']
     crs_here        = params['crs_here']
     bufferBorder    = params['bufferBorder']
+    lonlat_bounds   = params['lonlat_bounds']
 
     #borders
     indir = '{:s}Boundaries/'.format(dir_data)
@@ -56,8 +57,10 @@ if __name__ == '__main__':
     bordersSelection = bordersSelection.to_crs(crs_here)
 
     landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
-    landNE = landNE.to_crs(crs_here)
-  
+    if lonlat_bounds is not None:
+        landNE_ = pd.concat( [ gpd.clip(landNE,lonlat_bounds_) for lonlat_bounds_ in lonlat_bounds])
+    landNE = landNE_.to_crs(crs_here)
+ 
     #load graticule
     gratreso = 15
     graticule = gpd.read_file(indir+'NaturalEarth_graticules/ne_110m_graticules_{:d}.shp'.format(gratreso))
@@ -69,7 +72,7 @@ if __name__ == '__main__':
 
     dirout = '{:s}Maps-Product/{:s}/'.format(dir_data,continent)
     
-    if not(os.path.isfile(dirout+'industrialZone_osmSource.geojon')):
+    if not(os.path.isfile(dirout+'industrialZone_osmSource.geojson')):
         indusAll = None
         for indusFile in indusFiles:
 
@@ -85,7 +88,7 @@ if __name__ == '__main__':
             else: 
                 indusAll = pd.concat([indusAll,indus])
 
-        indusAll.to_file(dirout+'industrialZone_osmSource.geojon',driver='GeoJSON')
+        indusAll.to_file(dirout+'industrialZone_osmSource.geojson',driver='GeoJSON')
         if indusAll.crs.to_epsg() is None: 
             with open(dirout+'industrialZone_osmSource.prj','w') as f:
                 f.write(indusAll.crs.to_wkt())
@@ -94,7 +97,7 @@ if __name__ == '__main__':
         saving in geojson reset it to lalon WGS84
         '''
     else: 
-        indusAll = tools.my_read_file(dirout+'industrialZone_osmSource.geojon')
+        indusAll = tools.my_read_file(dirout+'industrialZone_osmSource.geojson')
 
     fig = plt.figure(figsize=(10,8))
     ax = plt.subplot(111)

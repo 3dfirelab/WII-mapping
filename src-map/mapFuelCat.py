@@ -17,6 +17,8 @@ import pyproj
 from fiona.crs import from_epsg
 import socket
 import pdb 
+import pickle 
+
 
 #homebrewed
 import params
@@ -51,9 +53,6 @@ def loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll,bordersS
     else: 
     #elif continent == 'asia':
         indir = '{:s}CLC/'.format(dir_data)
-        to_latlon = pyproj.Transformer.from_crs(crs_here, 'epsg:4326')
-        lowerCorner = to_latlon.transform(xminAll, yminAll)
-        upperCorner = to_latlon.transform(xmaxAll, ymaxAll)
         fuelCat_all = None
         for iv in idxclc:  
             print(iv)
@@ -105,7 +104,11 @@ if __name__ == '__main__':
     yminAll,ymaxAll = params['yminAll'], params['ymaxAll']
     crs_here        = params['crs_here']
     bufferBorder    = params['bufferBorder']
+    lonlat_bounds = params['lonlat_bounds']
 
+    to_latlon = pyproj.Transformer.from_crs(crs_here, 'epsg:4326')
+    lowerCorner = to_latlon.transform(xminAll, yminAll)
+    upperCorner = to_latlon.transform(xmaxAll, ymaxAll)
 
     #borders
     indir = '{:s}Boundaries/'.format(dir_data)
@@ -122,8 +125,11 @@ if __name__ == '__main__':
     bordersSelection = bordersSelection.to_crs(crs_here)
         
     landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
-    landNE = landNE.to_crs(crs_here)
+    if lonlat_bounds is not None: 
+        landNE_ = pd.concat( [ gpd.clip(landNE,lonlat_bounds_) for lonlat_bounds_ in lonlat_bounds])
+    landNE = landNE_.to_crs(crs_here)
 
+    
     #load graticule
     gratreso = 15
     graticule = gpd.read_file(indir+'NaturalEarth_graticules/ne_110m_graticules_{:d}.shp'.format(gratreso))
@@ -138,13 +144,18 @@ if __name__ == '__main__':
                   'vegetation category 3':colorCat[2],
                   'vegetation category 4':colorCat[3],
                   'vegetation category 5':colorCat[4], }
+  
    
-    idxclc, fuelCat_all = loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll,bordersSelection)
-           
-    #map to crs_here
+    if not(os.path.isfile(dirout+'FuelCatArea_CLC.pickle')):
+        idxclc, fuelCat_all = loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll,bordersSelection)
+        with  open(dirout+'FuelCatArea_CLC.pickle', 'wb') as f :
+            pickle.dump([idxclc, fuelCat_all], f )
+    else:
+        print('load Fuel Map')
+        with  open(dirout+'FuelCatArea_CLC.pickle', 'rb') as f :
+            idxclc, fuelCat_all = pickle.load(f)
 
     #plot
-    
     mpl.rcdefaults()
     #mpl.rcParams['legend.fontsize'] = 8
 
@@ -165,7 +176,8 @@ if __name__ == '__main__':
         #    classes=[1, 2, 3, 4, 5],
         #)
         patches = [mpl.patches.Patch(color=color, label=label) for label, color in color_dict.items() ]
-        ax.legend(handles=patches, bbox_to_anchor=(.45, .24), facecolor="white", prop={'size':10})
+        #ax.legend(handles=patches, bbox_to_anchor=(.45, .24), facecolor="white", prop={'size':8})
+        ax.legend(handles=patches, facecolor="white", prop={'size':8}, framealpha=0.5, loc='lower left')
 
         landNE_outside = gpd.overlay(landNE, bordersSelection[bordersSelection['LEVL_CODE']==0], how = 'difference')
         landNE_outside.buffer(1.e4).plot(ax=ax, facecolor='0.9', edgecolor='None',zorder=5)

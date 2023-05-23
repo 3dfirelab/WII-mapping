@@ -57,6 +57,7 @@ if __name__ == '__main__':
     crs_here        = params['crs_here']
     bufferBorder    = params['bufferBorder']
     distgroup       = params['distgroup']
+    lonlat_bounds = params['lonlat_bounds']
 
     #borders
     indir = '{:s}Boundaries/'.format(dir_data)
@@ -73,7 +74,10 @@ if __name__ == '__main__':
     bordersSelection = bordersSelection.to_crs(crs_here)
 
     landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
+    if lonlat_bounds is not None:
+        landNE__ = pd.concat( [ gpd.clip(landNE,lonlat_bounds_) for lonlat_bounds_ in lonlat_bounds])
     landNE = landNE.to_crs(crs_here)
+
 
     #load graticule
     gratreso = 15

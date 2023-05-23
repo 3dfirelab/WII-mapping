@@ -1,4 +1,5 @@
-
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def load_param(continent):
 
@@ -8,6 +9,7 @@ def load_param(continent):
         crs_here = 'epsg:3035'
         bufferBorder = -1800
         distgroup = 5.e3
+        lonlat_bounds = None # not necessary here, this is to plot land background 
 
     elif continent == 'asia':
         xminAll,xmaxAll = -1.057e7, -2.5e5
@@ -15,8 +17,10 @@ def load_param(continent):
         crs_here = 'epsg:8859'
         bufferBorder = -10000
         distgroup = 1.e3
+        lonlat_bounds = None # not necessary here, this is to plot land background 
     
     elif continent == 'namerica':
+        lonlat_bounds = [[-180,5,10,90],[150,60,180,90]]
         xminAll,xmaxAll = 1.95e6,  9.06e6
         yminAll,ymaxAll = -2.98e6,  5.90e6
         crs_here = 'epsg:3347'
@@ -39,6 +43,7 @@ def load_param(continent):
               'crs_here': crs_here, 
               'bufferBorder': bufferBorder, 
               'distgroup': distgroup, 
+              'lonlat_bounds':lonlat_bounds,
               }
 
     return params
