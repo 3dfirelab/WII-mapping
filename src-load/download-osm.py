@@ -166,7 +166,7 @@ if __name__ == '__main__':
         else: 
             borders_ = None
 
-        if borders_ is None : 
+        if (borders_ is None)  | (len(borders_)==0): 
             extent_ll=[[xminContinent,xmaxContinent,yminContinent,ymaxContinent]]
         else: 
             xmin_, ymin_, xmax_, ymax_ = borders_.total_bounds
