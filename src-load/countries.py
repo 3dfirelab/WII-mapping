@@ -53,7 +53,7 @@ africa = [['Algeria', 'DZA', None],
           ['Uganda', 'UGA', None], 
           ['Zambia', 'ZMB', None], 
           ['Zimbabwe','ZWE', None],
-          ['France','FR1', None],
+          ['France',None, None],
           ]
 
 camerica = [['Anguilla',None,None],
@@ -87,7 +87,8 @@ camerica = [['Anguilla',None,None],
             ['Trinidad and Tobago','TTO',None],
             ['Turks and Caicos Islands',None,None],
             ['United States Virgin Islands',None,None],
-            ['France','FR1', None],
+            ['Guadeloupe',None, None],
+            ['Martinique',None, None],
             ]
 
 samerica = [['Argentina','ARG',None],
@@ -102,7 +103,7 @@ samerica = [['Argentina','ARG',None],
             ['Suriname','SUR', None],
             ['Uruguay','URY', None],
             ['Venezuela','VEN', None],
-            ['France','FR1', None],
+            ['France',None, None],
             ]
 
 namerica = [['Canada','CAN',None],

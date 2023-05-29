@@ -10,6 +10,7 @@ import subprocess
 import geopandas as gpd
 import importlib
 import countries as contries_mod
+import pdb 
 
 #homebrwed
 sys.path.append('../src-map/')
@@ -17,7 +18,7 @@ import tools
 
 if __name__ == '__main__':
 
-    continent = 'africa'
+    continent = 'camerica'
     dir_data = tools.get_dirData()
 
     print('continent = ', continent)
@@ -57,18 +58,27 @@ if __name__ == '__main__':
         if 'congo-(republic/brazzaville)' in url: url = url.replace('congo-(republic/brazzaville)', 'congo-brazzaville')
         if 'congo-(democratic-republic/kinshasa)' in url: url = url.replace('congo-(democratic-republic/kinshasa)', 'congo-democratic-republic')
         if 'saint-helena' in url: url = url.replace(',','')
+        
+        out = url.split('/')[-1].split('-latest.')[0]
 
         if os.path.isfile(dirout+url.split('/')[-1]): 
-            return url.split('/')[-1].split('-latest.')[0]
+            return out 
+        
         if len( glob.glob( dirout+url.split('/')[-1].split('.osm')[0]+'*.osm.pbf') ) > 0:
-            return url.split('/')[-1].split('-latest.')[0]
-        if country_info[0] == 'France':  url = url.replace('south-america','europe')
-        if country_info[0] == 'France':  url = url.replace('central-america','europe')
+            return out
+        
+        #deal with france domtom
+        if (country_info[0] == 'France') & (continent=='samerica'): 
+            url = url.replace('south-america/france','europe/france/guyane')
+        
         print(url)
         wget.download(url, dirout )
         print('')
+        
+        if (country_info[0] == 'France') & (continent=='samerica'):
+            os.rename(dirout+ url.split('/')[-1], dirout+url.split('/')[-1].replace('guyane','france'))
 
-        return url.split('/')[-1].split('-latest.')[0]
+        return out 
 
 
     #download file
