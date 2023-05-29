@@ -22,13 +22,13 @@ import tools
 if __name__ == '__main__':
    
     importlib.reload(params)
-    continent = 'namerica'
+    continent = 'africa'
     dir_data = tools.get_dirData()
     
     print('continent = ', continent)
 
     importlib.reload(contries_mod)
-    from countries import europe, asia, namerica
+    from countries import europe, asia, namerica, samerica, camerica, africa
     if continent == 'europe': 
         countries_selection = np.array(europe)
 
@@ -37,6 +37,16 @@ if __name__ == '__main__':
     
     elif continent == 'namerica': 
         countries_selection = namerica
+    
+    elif continent == 'samerica': 
+        countries_selection = samerica
+    
+    elif continent == 'camerica': 
+        countries_selection = camerica
+    
+    elif continent == 'africa': 
+        countries_selection = africa
+    
     countries_selection = np.array(countries_selection)
 
     params = params.load_param(continent)
@@ -50,7 +60,9 @@ if __name__ == '__main__':
     
     continentMask = None
     for country_code in countries_selection[:,1]: 
-        
+       
+        if country_code is None: continue 
+
         if len(country_code.split(','))>1:
             country_code_ = country_code.split(',')
             condition = (bordersNE['SOV_A3']==country_code_[0])
@@ -59,6 +71,11 @@ if __name__ == '__main__':
             borders_ = bordersNE[condition]
         else:
             borders_ = bordersNE[bordersNE['SOV_A3']==country_code]
+
+        if country_code == 'ESP': 
+            bounds_ = borders_.total_bounds
+            bounds_[3] = 35.967
+            borders_ = gpd.clip(borders_, bounds_)
 
         if continentMask is None:
             continentMask=borders_
@@ -72,3 +89,10 @@ if __name__ == '__main__':
     if continentMask.crs.to_epsg() is None: 
         with open(indir+'mask_{:s}.prj'.format(continent),'w') as f:
             f.write(continentMask.crs.to_wkt())
+
+    ax=plt.subplot(111)
+    continentMask.plot(ax=ax)
+    ax.set_xlim(xminAll,xmaxAll)
+    ax.set_ylim(yminAll,ymaxAll)
+    plt.show()
+    

@@ -15,13 +15,16 @@ import pdb
 
 #homebrwed
 import countries as contries_mod
+sys.path.append('../src-map/')
+import tools
 
 if __name__ == '__main__':
    
-    continent = 'namerica'
-    
+    continent = 'samerica'
+    dir_data = tools.get_dirData()
+
     importlib.reload(contries_mod)
-    from countries import europe, asia, namerica
+    from countries import europe, asia, namerica, samerica
     
     if continent == 'europe': 
         countries_selection = europe
@@ -29,13 +32,15 @@ if __name__ == '__main__':
         countries_selection = asia
     elif continent == 'namerica': 
         countries_selection = namerica
-    
+    elif continent == 'samerica': 
+        countries_selection = samerica
+
     warnings.filterwarnings("ignore")
 
     flag_industrial     = True
     flag_veg_osm        = False
     
-    indir = '/mnt/dataEstrella/WII/OSM/PerCountry-{:s}/'.format(continent)
+    indir = '{:s}OSM/PerCountry-{:s}/'.format(dir_data,continent)
     osmfiles = sorted(glob.glob(indir+'*osm.pbf'))
   
     if flag_industrial:
@@ -56,7 +61,7 @@ if __name__ == '__main__':
 
         if flag_industrial:
             
-            outdir = '/mnt/dataEstrella/WII/IndustrialZone/{:s}/'.format(continent)
+            outdir = '{:s}IndustrialZone/{:s}/'.format(dir_data, continent)
            
             nbreTile = len( glob.glob( osmfile.split('-latest')[0]+'*.osm.pbf') )
             if nbreTile > 1: 
@@ -112,7 +117,7 @@ if __name__ == '__main__':
 
         if flag_veg_osm:
             print('fuel osm')
-            outdir = '/mnt/dataEstrella/WII/FuelCategories-OSM/'
+            outdir = '{:s}FuelCategories-OSM/'.format(dir_data)
             
             extent_ll=[-23.73507226782506, 24.505457173625324, 99.52727619009086, 80.51193780175987]
             osm = pyrosm.OSM(filepath=osmfile_, bounding_box=extent_ll)

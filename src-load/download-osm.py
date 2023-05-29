@@ -11,16 +11,19 @@ import geopandas as gpd
 import importlib
 import countries as contries_mod
 
-
+#homebrwed
+sys.path.append('../src-map/')
+import tools
 
 if __name__ == '__main__':
 
-    continent = 'namerica'
+    continent = 'africa'
+    dir_data = tools.get_dirData()
 
     print('continent = ', continent)
 
     importlib.reload(contries_mod)
-    from countries import europe, asia, namerica
+    from countries import europe, asia, namerica, samerica, camerica, africa
     
     if continent == 'europe': 
         countries_selection = europe
@@ -31,46 +34,90 @@ if __name__ == '__main__':
     elif continent == 'namerica': 
         countries_selection = namerica
         continent_url = 'north-america'
+    elif continent == 'samerica': 
+        countries_selection = samerica
+        continent_url = 'south-america'
+    elif continent == 'camerica': 
+        countries_selection = camerica
+        continent_url = 'central-america'
+    elif continent == 'africa': 
+        countries_selection = africa
+        continent_url = 'africa'
 
     template_url = 'https://download.geofabrik.de/{:s}'.format(continent_url)+'/{:s}-latest.osm.pbf'
-    dirout = '/mnt/dataEstrella/WII/OSM/PerCountry-{:s}/'.format(continent)
+    template_url2 = 'https://download.openstreetmap.fr/extracts/{:s}'.format(continent_url)+'/{:s}-latest.osm.pbf'
+    dirout = '{:s}OSM/PerCountry-{:s}/'.format(dir_data,continent)
+    tools.ensure_dir(dirout)
 
-    #download file
-    for country_info in countries_selection: 
-        country = country_info[0]
-        url = template_url.format('-'.join(country.lower().split(' ')))
+    def getomspbf(template_url,dirout,spaceCharacter='-'):
+        url = template_url.format(spaceCharacter.join(country.lower().split(' ')))
         if country == 'Russia': url = url.replace('europe/','')
         if 'Malaysia' in country: url = url.replace(',','').replace('and-','')
-        if os.path.isfile(dirout+url.split('/')[-1]): continue
-        if len( glob.glob( dirout+url.split('/')[-1].split('.osm')[0]+'*.osm.pbf') ) > 0: continue 
+        if 'Haiti' in country_info[0]: url = url.replace('haiti-and-dominican-republic','haiti-and-domrep')
+        if 'congo-(republic/brazzaville)' in url: url = url.replace('congo-(republic/brazzaville)', 'congo-brazzaville')
+        if 'congo-(democratic-republic/kinshasa)' in url: url = url.replace('congo-(democratic-republic/kinshasa)', 'congo-democratic-republic')
+        if 'saint-helena' in url: url = url.replace(',','')
+
+        if os.path.isfile(dirout+url.split('/')[-1]): 
+            return url.split('/')[-1].split('-latest.')[0]
+        if len( glob.glob( dirout+url.split('/')[-1].split('.osm')[0]+'*.osm.pbf') ) > 0:
+            return url.split('/')[-1].split('-latest.')[0]
+        if country_info[0] == 'France':  url = url.replace('south-america','europe')
+        if country_info[0] == 'France':  url = url.replace('central-america','europe')
         print(url)
         wget.download(url, dirout )
         print('')
 
+        return url.split('/')[-1].split('-latest.')[0]
+
+
+    #download file
+    countries_here = np.array(countries_selection)
+    for ic, country_info in enumerate(countries_selection): 
+        country = country_info[0]
+        try: 
+           countries_here_ = getomspbf(template_url,dirout)
+        except: 
+           countries_here_ = getomspbf(template_url2,dirout,spaceCharacter='_')
+
+        countries_here[ic,0] =  countries_here_
 
     #split file in tiles
     if continent == 'europe':
-        indir = '/mnt/dataEstrella/WII/Boundaries/NUTS/'
+        indir = '{:s}Boundaries/NUTS/'.format(dir_data)
         borders = gpd.read_file(indir+'NUTS_RG_01M_2021_4326.geojson')
         xminContinent,yminContinent, xmaxContinent,ymaxContinent = [-31., 24.505457173625324, 99.52727619009086, 80.51193780175987]
     elif continent == 'asia':
-        indir = '/mnt/dataEstrella/WII/Boundaries//'
+        indir = '{:s}Boundaries//'.format(dir_data)
         borders = gpd.read_file(indir+'NaturalEarth_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
         xminContinent,yminContinent, xmaxContinent,ymaxContinent = [28.7, -14.9, 188, 87.]
     elif continent == 'namerica':
-        indir = '/mnt/dataEstrella/WII/Boundaries//'
+        indir = '{:s}Boundaries//'.format(dir_data)
         borders = gpd.read_file(indir+'NaturalEarth_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
         xminContinent,yminContinent, xmaxContinent,ymaxContinent = [-180, -13.0, -21, 90.]
+    elif continent == 'samerica':
+        indir = '{:s}Boundaries//'.format(dir_data)
+        borders = gpd.read_file(indir+'NaturalEarth_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
+        xminContinent,yminContinent, xmaxContinent,ymaxContinent = [-95, -65.0, -30, 14.]
+    elif continent == 'camerica':
+        indir = '{:s}Boundaries//'.format(dir_data)
+        borders = gpd.read_file(indir+'NaturalEarth_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
+        xminContinent,yminContinent, xmaxContinent,ymaxContinent = [-95, 5.0, -50, 30.]
+    elif continent == 'africa':
+        indir = '{:s}Boundaries//'.format(dir_data)
+        borders = gpd.read_file(indir+'NaturalEarth_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
+        xminContinent,yminContinent, xmaxContinent,ymaxContinent = [-25, -40.0, 55, 38.]
     
-
+    '''
     countries_here = np.array(countries_selection)
     for ic in range(countries_here.shape[0]):
         countries_here[ic,0]= '-'.join(countries_here[ic,0].lower().split(' '))
 
         if 'malaysia' in countries_here[ic,0]: countries_here[ic,0] = countries_here[ic,0].replace(',','').replace('and-','')
+    '''
 
-    indir = '/mnt/dataEstrella/WII/OSM/PerCountry-{:s}/'.format(continent)
-    outdir = '/mnt/dataEstrella/WII/OSM/PerCountry-{:s}/'.format(continent)
+    indir = '{:s}OSM/PerCountry-{:s}/'.format(dir_data, continent)
+    outdir = '{:s}OSM/PerCountry-{:s}/'.format(dir_data, continent)
     osmfiles = sorted(glob.glob(indir+'*latest.osm.pbf'))
 
     template_osmosis_main = 'osmosis --read-pbf {:s} --tee {:d} '
@@ -93,7 +140,7 @@ if __name__ == '__main__':
                 else: 
                     borders_ = borders[(borders['LEVL_CODE']==1)&(borders['CNTR_CODE']==country_code)&(borders['NUTS_ID']==country_code2)]
             
-            elif (continent == 'asia') | (continent=='namerica'):
+            elif (continent == 'asia') | (continent=='namerica')| (continent=='samerica')| (continent=='camerica')| (continent=='africa'):
                 if len(country_code.split(','))>1:
                     country_code_ = country_code.split(',')
                     condition = (borders['SOV_A3']==country_code_[0])

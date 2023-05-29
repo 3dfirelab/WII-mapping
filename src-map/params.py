@@ -35,6 +35,37 @@ def load_param(continent):
 
         bufferBorder = -10000
         distgroup = 1.e3
+    
+    elif continent == 'samerica':
+        #lonlat_bounds = [[-180,5,10,90],],
+        xminAll,xmaxAll = -9.8e5,  6.51e6
+        yminAll,ymaxAll = -6.55e6,  2.11e6
+        crs_here = 'epsg:31971'
+
+        bufferBorder = -10000
+        distgroup = 1.e3
+        lonlat_bounds = None # not necessary here, this is to plot land background 
+    
+    elif continent == 'camerica':
+        #lonlat_bounds = [[-180,5,10,90],],
+        xminAll,xmaxAll = -3.e5,  4.004e6
+        yminAll,ymaxAll = 5.55e5,  3.15e6
+        crs_here = 'epsg:31970'
+
+        bufferBorder = -10000
+        distgroup = 1.e3
+        lonlat_bounds = None # no
+    
+    elif continent == 'africa':
+        #lonlat_bounds = [[-180,5,10,90],],
+        xminAll,xmaxAll = -5.15e6,  4.08e6
+        yminAll,ymaxAll = -1.66e6,  6.7e6
+        crs_here = '+proj=chamb +lat_1=22 +lon_1=0 +lat_2=22 +lon_2=45 +lat_3=-22 +lon_3=22.5 +datum=WGS84 +type=crs'
+
+        bufferBorder = -10000
+        distgroup = 1.e3
+        lonlat_bounds = None # no
+
 
     params = {'xminAll': xminAll,
               'xmaxAll': xmaxAll, 
