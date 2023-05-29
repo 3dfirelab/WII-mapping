@@ -62,7 +62,8 @@ if __name__ == '__main__':
         if flag_industrial:
             
             outdir = '{:s}IndustrialZone/{:s}/'.format(dir_data, continent)
-           
+            tools.ensure_dir(outdir)
+
             nbreTile = len( glob.glob( osmfile.split('-latest')[0]+'*.osm.pbf') )
             if nbreTile > 1: 
                 it = int(osmfile.split('-latest_')[1].split('.osm')[0])
