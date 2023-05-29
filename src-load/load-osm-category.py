@@ -24,7 +24,7 @@ if __name__ == '__main__':
     dir_data = tools.get_dirData()
 
     importlib.reload(contries_mod)
-    from countries import europe, asia, namerica, samerica
+    from countries import europe, asia, namerica, samerica, camerica
     
     if continent == 'europe': 
         countries_selection = europe
@@ -34,6 +34,8 @@ if __name__ == '__main__':
         countries_selection = namerica
     elif continent == 'samerica': 
         countries_selection = samerica
+    elif continent == 'camerica': 
+        countries_selection = camerica
 
     warnings.filterwarnings("ignore")
 
