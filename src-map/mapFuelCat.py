@@ -139,7 +139,8 @@ if __name__ == '__main__':
 
 
     dirout = '{:s}Maps-Product/{:s}/'.format(dir_data,continent)
-    
+    tools.ensure_dir(dirout)
+
     colorCat=['darkgreen', 'fuchsia', 'gold', 'tomato' ,'teal']
     color_dict = {'vegetation category 1':colorCat[0], 
                   'vegetation category 2':colorCat[1],
