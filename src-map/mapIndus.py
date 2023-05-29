@@ -18,7 +18,7 @@ import params
 
 if __name__ == '__main__':
     
-    continent = 'samerica'
+    continent = 'camerica'
     dir_data = tools.get_dirData()
 
     importlib.reload(tools)
@@ -76,7 +76,8 @@ if __name__ == '__main__':
     indusFiles = sorted(glob.glob(indir+'*.geojson'))
 
     dirout = '{:s}Maps-Product/{:s}/'.format(dir_data,continent)
-    
+    tools.ensure_dir(dirout)
+
     if not(os.path.isfile(dirout+'industrialZone_osmSource.geojson')):
         indusAll = None
         for indusFile in indusFiles:

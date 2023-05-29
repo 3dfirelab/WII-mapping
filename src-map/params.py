@@ -42,7 +42,7 @@ def load_param(continent):
         yminAll,ymaxAll = -6.55e6,  2.11e6
         crs_here = 'epsg:31971'
 
-        bufferBorder = -10000
+        bufferBorder = -5000
         distgroup = 1.e3
         lonlat_bounds = [[-105., -60.0, -20., 20.]] # not necessary here, this is to plot land background 
     
@@ -52,9 +52,9 @@ def load_param(continent):
         yminAll,ymaxAll = 5.55e5,  3.15e6
         crs_here = 'epsg:31970'
 
-        bufferBorder = -10000
+        bufferBorder = -1000
         distgroup = 1.e3
-        lonlat_bounds = [-95, 5.0, -50, 30.] # no
+        lonlat_bounds = [[-95, 5.0, -50, 50.]] # no
     
     elif continent == 'africa':
         #lonlat_bounds = [[-180,5,10,90],],
@@ -64,7 +64,7 @@ def load_param(continent):
 
         bufferBorder = -10000
         distgroup = 1.e3
-        lonlat_bounds = [-25, -40.0, 55, 38.] # no
+        lonlat_bounds = [[-25, -40.0, 55, 38.]] # no
 
 
     params = {'xminAll': xminAll,
