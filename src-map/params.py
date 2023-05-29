@@ -44,7 +44,7 @@ def load_param(continent):
 
         bufferBorder = -10000
         distgroup = 1.e3
-        lonlat_bounds = None # not necessary here, this is to plot land background 
+        lonlat_bounds = -95, -65.0, -30, 14. # not necessary here, this is to plot land background 
     
     elif continent == 'camerica':
         #lonlat_bounds = [[-180,5,10,90],],
@@ -54,7 +54,7 @@ def load_param(continent):
 
         bufferBorder = -10000
         distgroup = 1.e3
-        lonlat_bounds = None # no
+        lonlat_bounds = -95, 5.0, -50, 30. # no
     
     elif continent == 'africa':
         #lonlat_bounds = [[-180,5,10,90],],
@@ -64,7 +64,7 @@ def load_param(continent):
 
         bufferBorder = -10000
         distgroup = 1.e3
-        lonlat_bounds = None # no
+        lonlat_bounds = -25, -40.0, 55, 38. # no
 
 
     params = {'xminAll': xminAll,

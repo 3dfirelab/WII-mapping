@@ -78,7 +78,7 @@ if __name__ == '__main__':
     '''
 
     #continent = 'asia'
-    continent = 'namerica'
+    continent = 'samerica'
     
     importlib.reload(tools)
     importlib.reload(glc)
@@ -118,7 +118,7 @@ if __name__ == '__main__':
         extraNUTS = gpd.read_file(indir+'noNUTS.geojson')
         extraNUST = extraNUTS.to_crs(crs_here)
         bordersSelection = pd.concat([bordersNUST,extraNUST])
-    elif (continent == 'asia') | (continent == 'namerica'): 
+    else:
         bordersSelection = tools.my_read_file(indir+'mask_{:s}.geojson'.format(continent))
         bordersSelection = bordersSelection[['SOV_A3', 'geometry', 'LEVL_CODE']]
         bordersSelection = bordersSelection.dissolve(by='SOV_A3', aggfunc='sum').reset_index()
@@ -126,7 +126,9 @@ if __name__ == '__main__':
         
     landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
     if lonlat_bounds is not None: 
-        landNE_ = pd.concat( [ gpd.clip(landNE,lonlat_bounds_) for lonlat_bounds_ in lonlat_bounds])
+        landNE_ = pd.concat( [ gpd.clip(landNE,lonlat_bounds) for lonlat_bounds_ in lonlat_bounds])
+    else: 
+        landNE_ = landNE
     landNE = landNE_.to_crs(crs_here)
 
     
