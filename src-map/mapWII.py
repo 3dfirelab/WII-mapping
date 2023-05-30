@@ -32,7 +32,7 @@ if __name__ == '__main__':
         flag_loopIndus = 'inverse'
     
     if socket.gethostname() == 'ubu':     
-        flag_loopIndus = 'center'
+        flag_loopIndus = 'inverse'
     
     if socket.gethostname() == 'estrella':     
         flag_loopIndus = -166
