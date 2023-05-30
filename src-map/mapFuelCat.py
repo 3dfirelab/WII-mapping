@@ -106,9 +106,9 @@ if __name__ == '__main__':
     bufferBorder    = params['bufferBorder']
     lonlat_bounds = params['lonlat_bounds']
 
-    to_latlon = pyproj.Transformer.from_crs(crs_here, 'epsg:4326')
-    lowerCorner = to_latlon.transform(xminAll, yminAll)
-    upperCorner = to_latlon.transform(xmaxAll, ymaxAll)
+    #to_latlon = pyproj.Transformer.from_crs(crs_here, 'epsg:4326')
+    #lowerCorner = to_latlon.transform(xminAll, yminAll)
+    #upperCorner = to_latlon.transform(xmaxAll, ymaxAll)
 
     #borders
     indir = '{:s}Boundaries/'.format(dir_data)

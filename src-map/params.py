@@ -38,10 +38,10 @@ def load_param(continent):
     
     elif continent == 'samerica':
         #lonlat_bounds = [[-180,5,10,90],],
-        xminAll,xmaxAll = -9.8e5,  6.51e6
-        yminAll,ymaxAll = -6.55e6,  2.11e6
-        crs_here = 'epsg:31971'
-
+        xminAll,xmaxAll = -3.87e6,  3.03e6
+        yminAll,ymaxAll = -3.02e6,  5.15e6
+        #crs_here = 'epsg:31971'
+        crs_here = 'ESRI:102015'
         bufferBorder = -5000
         distgroup = 1.e3
         lonlat_bounds = [[-105., -60.0, -20., 20.]] # not necessary here, this is to plot land background 
@@ -54,17 +54,17 @@ def load_param(continent):
 
         bufferBorder = -1000
         distgroup = 1.e3
-        lonlat_bounds = [[-95, 5.0, -50, 50.]] # no
+        lonlat_bounds = [[-95, 0.0, -50, 50.]] # no
     
     elif continent == 'africa':
         #lonlat_bounds = [[-180,5,10,90],],
-        xminAll,xmaxAll = -5.15e6,  4.08e6
-        yminAll,ymaxAll = -1.66e6,  6.7e6
-        crs_here = '+proj=chamb +lat_1=22 +lon_1=0 +lat_2=22 +lon_2=45 +lat_3=-22 +lon_3=22.5 +datum=WGS84 +type=crs'
+        xminAll,xmaxAll = -4.47e6,  4.67e6
+        yminAll,ymaxAll = -4.01e6,  4.23e6
+        crs_here = 'ESRI:102011' #'+proj=chamb +lat_1=22 +lon_1=0 +lat_2=22 +lon_2=45 +lat_3=-22 +lon_3=22.5 +datum=WGS84 +type=crs'
 
         bufferBorder = -10000
         distgroup = 1.e3
-        lonlat_bounds = [[-25, -40.0, 55, 38.]] # no
+        lonlat_bounds = [[-33, -40.0, 68, 40.]] # no
 
 
     params = {'xminAll': xminAll,

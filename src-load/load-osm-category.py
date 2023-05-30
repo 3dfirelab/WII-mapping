@@ -20,7 +20,7 @@ import tools
 
 if __name__ == '__main__':
    
-    continent = 'africa'
+    continent = 'samerica'
     dir_data = tools.get_dirData()
 
     importlib.reload(contries_mod)

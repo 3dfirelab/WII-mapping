@@ -22,13 +22,15 @@ import tools
 if __name__ == '__main__':
    
     importlib.reload(params)
-    continent = 'africa'
+    continent = 'samerica'
     dir_data = tools.get_dirData()
     
     print('continent = ', continent)
 
     importlib.reload(contries_mod)
     from countries import europe, asia, namerica, samerica, camerica, africa
+    from countries_area_check import europeA, asiaA, namericaA, samericaA, camericaA, africaA
+
     if continent == 'europe': 
         countries_selection = np.array(europe)
 
@@ -37,17 +39,22 @@ if __name__ == '__main__':
     
     elif continent == 'namerica': 
         countries_selection = namerica
+        countries_area = namericaA
     
     elif continent == 'samerica': 
         countries_selection = samerica
+        countries_area = samericaA
     
     elif continent == 'camerica': 
         countries_selection = camerica
+        countries_area = camericaA
     
     elif continent == 'africa': 
         countries_selection = africa
+        countries_area = africaA
     
     countries_selection = np.array(countries_selection)
+    countries_area = np.array(countries_area)
 
     params = params.load_param(continent)
     xminAll,xmaxAll = params['xminAll'], params['xmaxAll']
@@ -59,7 +66,7 @@ if __name__ == '__main__':
     bordersNE = gpd.read_file(indir+'NaturalEarth_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
     
     continentMask = None
-    for country_code in countries_selection[:,1]: 
+    for country_code,country_code2 in zip(countries_selection[:,1], countries_selection[:,2]): 
        
         if country_code is None: continue 
 
@@ -71,6 +78,9 @@ if __name__ == '__main__':
             borders_ = bordersNE[condition]
         else:
             borders_ = bordersNE[bordersNE['SOV_A3']==country_code]
+
+        if country_code2 is not None: 
+            borders_ = borders_[bordersNE['ADM0_A3']==country_code2]
 
         if country_code == 'ESP': 
             bounds_ = borders_.total_bounds
@@ -90,9 +100,21 @@ if __name__ == '__main__':
         with open(indir+'mask_{:s}.prj'.format(continent),'w') as f:
             f.write(continentMask.crs.to_wkt())
 
-    ax=plt.subplot(111)
+    ax=plt.subplot(121)
     continentMask.plot(ax=ax)
     ax.set_xlim(xminAll,xmaxAll)
     ax.set_ylim(yminAll,ymaxAll)
+    
+    ax=plt.subplot(122)
+    areaComparison = np.zeros([countries_area.shape[0],2])
+    for ic, country_code in  enumerate(countries_area[:,1]):
+        
+        areaComparison[ic,0] = float(countries_area[ic,2])
+        country_code_arr = country_code.split(',') 
+        for country_code_ in country_code_arr:
+            areaComparison[ic,1] += continentMask[continentMask['SOV_A3']==country_code_].area.sum()*1.e-6
+    
+    plt.scatter(areaComparison[:,0],areaComparison[:,1])
+    plt.plot([0,areaComparison[:,0].max()],[0,areaComparison[:,0].max()],linestyle=':')
     plt.show()
     

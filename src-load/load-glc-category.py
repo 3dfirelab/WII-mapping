@@ -29,6 +29,7 @@ def clipped_fuelCat_raster(indir, iv, crs_here, xminContinent,yminContinent, xma
     warnings.simplefilter(action='ignore', category=FutureWarning)
         
     to_latlon = pyproj.Transformer.from_crs(crs_here, 'epsg:4326')
+
     lowerCorner = to_latlon.transform(xminContinent, yminContinent)
     upperCorner = to_latlon.transform(xmaxContinent, ymaxContinent)
 
