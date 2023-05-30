@@ -22,7 +22,7 @@ import tools
 if __name__ == '__main__':
    
     importlib.reload(params)
-    continent = 'samerica'
+    continent = 'asia'
     dir_data = tools.get_dirData()
     
     print('continent = ', continent)
@@ -36,6 +36,7 @@ if __name__ == '__main__':
 
     elif continent == 'asia': 
         countries_selection = np.array(asia)
+        countries_area = asiaA
     
     elif continent == 'namerica': 
         countries_selection = namerica

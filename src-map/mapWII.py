@@ -23,7 +23,7 @@ warnings.filterwarnings("ignore")
 if __name__ == '__main__':
 
     
-    continent = 'namerica'
+    continent = 'camerica'
     dir_data = tools.get_dirData()
 
     flag_onlyplot = False
@@ -72,17 +72,22 @@ if __name__ == '__main__':
         bordersSelection = bordersSelection[['SOV_A3', 'geometry', 'LEVL_CODE']]
         bordersSelection = bordersSelection.dissolve(by='SOV_A3', aggfunc='sum').reset_index()
     bordersSelection = bordersSelection.to_crs(crs_here)
-
+    
     landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
-    if lonlat_bounds is not None:
-        landNE__ = pd.concat( [ gpd.clip(landNE,lonlat_bounds_) for lonlat_bounds_ in lonlat_bounds])
-    landNE = landNE.to_crs(crs_here)
-
-
     #load graticule
     gratreso = 15
     graticule = gpd.read_file(indir+'NaturalEarth_graticules/ne_110m_graticules_{:d}.shp'.format(gratreso))
-    graticule = graticule.to_crs(crs_here)
+
+    if lonlat_bounds is not None:
+        landNE_ = pd.concat( [ gpd.clip(landNE,lonlat_bounds_) for lonlat_bounds_ in lonlat_bounds])
+        graticule_ = pd.concat( [ gpd.clip(graticule,lonlat_bounds_) for lonlat_bounds_ in lonlat_bounds])
+    else: 
+        landNE_ = landNE
+        graticule_= graticule
+
+    landNE = landNE_.to_crs(crs_here)
+    graticule = graticule_.to_crs(crs_here)
+    
 
     #industrial zone
     indir = '{:s}IndustrialZone/{:s}/'.format(dir_data,continent)

@@ -77,8 +77,8 @@ if __name__ == '__main__':
     only plotting if out of europe
     '''
 
-    #continent = 'asia'
-    continent = 'samerica'
+    continent = 'asia'
+    #continent = 'samerica'
     
     importlib.reload(tools)
     importlib.reload(glc)
