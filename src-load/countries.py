@@ -103,7 +103,7 @@ samerica = [['Argentina','ARG',None],
             ['Suriname','SUR', None],
             ['Uruguay','URY', None],
             ['Venezuela','VEN', None],
-            ['France',None, None],
+            ['Guyane',None, None],
             ]
 
 namerica = [['Canada','CAN',None],

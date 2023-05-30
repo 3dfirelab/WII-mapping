@@ -18,7 +18,7 @@ import tools
 
 if __name__ == '__main__':
 
-    continent = 'camerica'
+    continent = 'samerica'
     dir_data = tools.get_dirData()
 
     print('continent = ', continent)
