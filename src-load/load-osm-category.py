@@ -20,9 +20,10 @@ import tools
 
 if __name__ == '__main__':
    
-    continent = 'samerica'
+    continent = 'russia'
     dir_data = tools.get_dirData()
 
+    '''
     importlib.reload(contries_mod)
     from countries import europe, asia, namerica, samerica, camerica, africa
     
@@ -38,7 +39,7 @@ if __name__ == '__main__':
         countries_selection = camerica
     elif continent == 'africa': 
         countries_selection = africa
-
+    '''
     warnings.filterwarnings("ignore")
 
     flag_industrial     = True

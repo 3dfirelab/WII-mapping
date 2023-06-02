@@ -23,7 +23,7 @@ warnings.filterwarnings("ignore")
 if __name__ == '__main__':
 
     
-    continent = 'camerica'
+    continent = 'samerica'
     dir_data = tools.get_dirData()
 
     flag_onlyplot = False
@@ -38,6 +38,7 @@ if __name__ == '__main__':
         flag_loopIndus = -166
     
     importlib.reload(tools)
+    importlib.reload(params)
 
     '''
     if continent == 'europe':
@@ -58,6 +59,7 @@ if __name__ == '__main__':
     bufferBorder    = params['bufferBorder']
     distgroup       = params['distgroup']
     lonlat_bounds = params['lonlat_bounds']
+    gratreso        = params['gratreso']
 
     #borders
     indir = '{:s}Boundaries/'.format(dir_data)
@@ -75,7 +77,7 @@ if __name__ == '__main__':
     
     landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
     #load graticule
-    gratreso = 15
+    #gratreso = 15
     graticule = gpd.read_file(indir+'NaturalEarth_graticules/ne_110m_graticules_{:d}.shp'.format(gratreso))
 
     if lonlat_bounds is not None:
@@ -183,6 +185,11 @@ if __name__ == '__main__':
     #if socket.gethostname() == 'moritz':
     if True:
     
+        mpl.rcdefaults()
+        #mpl.rcParams['legend.fontsize'] = 8
+        mpl.rcParams['xtick.labelsize'] = 8
+        mpl.rcParams['ytick.labelsize'] = 8
+        
         #plot
         fig = plt.figure(figsize=(10,8))
         ax = plt.subplot(111)

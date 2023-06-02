@@ -10,6 +10,7 @@ def load_param(continent):
         bufferBorder = -1800
         distgroup = 5.e3
         lonlat_bounds = None # not necessary here, this is to plot land background 
+        gratreso = 15
 
     elif continent == 'asia':
         xminAll,xmaxAll = -1.057e7, -2.5e5
@@ -18,6 +19,7 @@ def load_param(continent):
         bufferBorder = -10000
         distgroup = 1.e3
         lonlat_bounds = None # not necessary here, this is to plot land background 
+        gratreso = 15
     
     elif continent == 'namerica':
         lonlat_bounds = [[-180,5,10,90],[150,60,180,90]]
@@ -35,6 +37,7 @@ def load_param(continent):
 
         bufferBorder = -10000
         distgroup = 1.e3
+        gratreso = 15
     
     elif continent == 'samerica':
         #lonlat_bounds = [[-180,5,10,90],],
@@ -45,6 +48,7 @@ def load_param(continent):
         bufferBorder = -5000
         distgroup = 1.e3
         lonlat_bounds = [[-105., -60.0, -20., 20.]] # not necessary here, this is to plot land background 
+        gratreso = 15
     
     elif continent == 'camerica':
         #lonlat_bounds = [[-180,5,10,90],],
@@ -55,6 +59,7 @@ def load_param(continent):
         bufferBorder = -1000
         distgroup = 1.e3
         lonlat_bounds = [[-95, 0.0, -50, 50.]] # no
+        gratreso = 5
     
     elif continent == 'africa':
         #lonlat_bounds = [[-180,5,10,90],],
@@ -65,7 +70,17 @@ def load_param(continent):
         bufferBorder = -10000
         distgroup = 1.e3
         lonlat_bounds = [[-33, -40.0, 68, 40.]] # no
+        gratreso = 15
 
+    elif continent == 'russia':
+        xminAll,xmaxAll = -4.85e6,  3.97e6
+        yminAll,ymaxAll = -1.57e6,  3.83e6
+        crs_here = '+proj=aea +lat_1=50 +lat_2=70 +lat_0=56 +lon_0=100 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs ' #'+proj=chamb +lat_1=22 +lon_1=0 +lat_2=22 +lon_2=45 +lat_3=-22 +lon_3=22.5 +datum=WGS84 +type=crs'
+
+        bufferBorder = -100
+        distgroup = 1.e3
+        lonlat_bounds = [[-5, 0, 180, 90.],[-180,40,-150,90]] # no
+        gratreso = 5
 
     params = {'xminAll': xminAll,
               'xmaxAll': xmaxAll, 
@@ -75,6 +90,7 @@ def load_param(continent):
               'bufferBorder': bufferBorder, 
               'distgroup': distgroup, 
               'lonlat_bounds':lonlat_bounds,
+              'gratreso':gratreso
               }
 
     return params

@@ -77,7 +77,7 @@ if __name__ == '__main__':
     only plotting if out of europe
     '''
 
-    continent = 'asia'
+    continent = 'russia'
     #continent = 'samerica'
     
     importlib.reload(tools)
@@ -104,8 +104,8 @@ if __name__ == '__main__':
     yminAll,ymaxAll = params['yminAll'], params['ymaxAll']
     crs_here        = params['crs_here']
     bufferBorder    = params['bufferBorder']
-    lonlat_bounds = params['lonlat_bounds']
-
+    lonlat_bounds   = params['lonlat_bounds']
+    gratreso        = params['gratreso']
     #to_latlon = pyproj.Transformer.from_crs(crs_here, 'epsg:4326')
     #lowerCorner = to_latlon.transform(xminAll, yminAll)
     #upperCorner = to_latlon.transform(xmaxAll, ymaxAll)
@@ -123,10 +123,13 @@ if __name__ == '__main__':
         bordersSelection = bordersSelection[['SOV_A3', 'geometry', 'LEVL_CODE']]
         bordersSelection = bordersSelection.dissolve(by='SOV_A3', aggfunc='sum').reset_index()
     bordersSelection = bordersSelection.to_crs(crs_here)
-    
+   
+    #if continent == 'russia':
+    #    bordersSelection['geometry'] = bordersSelection.buffer(.5).buffer(-.5) # pb at 180 to -180. close small gap
+
     landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
     #load graticule
-    gratreso = 15
+    #gratreso = 5
     graticule = gpd.read_file(indir+'NaturalEarth_graticules/ne_110m_graticules_{:d}.shp'.format(gratreso))
 
     if lonlat_bounds is not None:
@@ -149,7 +152,7 @@ if __name__ == '__main__':
                   'vegetation category 4':colorCat[3],
                   'vegetation category 5':colorCat[4], }
   
-   
+  
     if not(os.path.isfile(dirout+'FuelCatArea_CLC.pickle')):
         idxclc, fuelCat_all = loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll,bordersSelection)
         with  open(dirout+'FuelCatArea_CLC.pickle', 'wb') as f :
@@ -158,22 +161,25 @@ if __name__ == '__main__':
         print('load Fuel Map')
         with  open(dirout+'FuelCatArea_CLC.pickle', 'rb') as f :
             idxclc, fuelCat_all = pickle.load(f)
+            #idxclc, fuelCat_all = None, None 
 
     #plot
     mpl.rcdefaults()
     #mpl.rcParams['legend.fontsize'] = 8
+    mpl.rcParams['xtick.labelsize'] = 8
+    mpl.rcParams['ytick.labelsize'] = 8
 
     fig = plt.figure(figsize=(10,8))
     ax = plt.subplot(111)
     landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
-    graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
     bordersSelection.buffer(bufferBorder)[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
+    graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=4)
     #bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
 
     if type(fuelCat_all) is gpd.geodataframe.GeoDataFrame:
-        fuelCat_all.plot(ax=ax, column='rank', legend=True, cmap=colors.ListedColormap(list(color_dict.values())),zorder=4)
-    else: 
-        im = ax.imshow(fuelCat_all, cmap=colors.ListedColormap(list(color_dict.values())),extent=(xminAll,xmaxAll,yminAll, ymaxAll),interpolation='nearest', zorder=4)
+        fuelCat_all.plot(ax=ax, column='rank', legend=True, cmap=colors.ListedColormap(list(color_dict.values())),zorder=5)
+    elif type(fuelCat_all) == np.ma.core.MaskedArray: 
+        im = ax.imshow(fuelCat_all, cmap=colors.ListedColormap(list(color_dict.values())),extent=(xminAll,xmaxAll,yminAll, ymaxAll),interpolation='nearest', zorder=5)
         #legend=ep.draw_legend(
         #    im,
         #    titles=["vegetation category 1", "vegetation category 2", "vegetation category 3", "vegetation category 4", "vegetation category 5"],
@@ -184,7 +190,9 @@ if __name__ == '__main__':
         ax.legend(handles=patches, facecolor="white", prop={'size':8}, framealpha=0.5, loc='lower left')
 
         landNE_outside = gpd.overlay(landNE, bordersSelection[bordersSelection['LEVL_CODE']==0], how = 'difference')
-        landNE_outside.buffer(1.e4).plot(ax=ax, facecolor='0.9', edgecolor='None',zorder=5)
+        landNE_outside.buffer(1.e4).plot(ax=ax, facecolor='0.9', edgecolor='None',zorder=3)
+    else:
+        pass
 
     ax.set_xlim(xminAll,xmaxAll)
     ax.set_ylim(yminAll,ymaxAll)
@@ -199,15 +207,17 @@ if __name__ == '__main__':
     lline = shapely.geometry.LineString([[xminAll,ymaxAll],[xmaxAll,ymaxAll]])
     #geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
     geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=bordersSelection.crs)
+    #ptsEdgelon =  gpd.overlay(ptsEdge[(ptsEdge['direction']=='W')|(ptsEdge['direction']=='E')], geo, how = 'intersection', keep_geom_type=False)
     ptsEdgelon =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
     
     ax.xaxis.set_ticks(ptsEdgelon.geometry.centroid.x)
-    ax.xaxis.set_ticklabels(ptsEdgelon.display)
+    ax.xaxis.set_ticklabels(ptsEdgelon.display, rotation=33)
     ax.xaxis.tick_top()
     
     lline = shapely.geometry.LineString([[xminAll,yminAll],[xminAll,ymaxAll]])
     #geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
     geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=bordersSelection.crs)
+    #ptsEdgelat =  gpd.overlay(ptsEdge[(ptsEdge['direction']=='N')|(ptsEdge['direction']=='S')], geo, how = 'intersection', keep_geom_type=False)
     ptsEdgelat =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
 
     ax.yaxis.set_ticks(ptsEdgelat.geometry.centroid.y)

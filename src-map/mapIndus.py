@@ -18,7 +18,7 @@ import params
 
 if __name__ == '__main__':
     
-    continent = 'asia'
+    continent = 'russia'
     dir_data = tools.get_dirData()
 
     importlib.reload(tools)
@@ -41,6 +41,7 @@ if __name__ == '__main__':
     crs_here        = params['crs_here']
     bufferBorder    = params['bufferBorder']
     lonlat_bounds   = params['lonlat_bounds']
+    gratreso        = params['gratreso']
 
     #borders
     indir = '{:s}Boundaries/'.format(dir_data)
@@ -58,7 +59,7 @@ if __name__ == '__main__':
 
     landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
     #load graticule
-    gratreso = 15
+    #gratreso = 15
     graticule = gpd.read_file(indir+'NaturalEarth_graticules/ne_110m_graticules_{:d}.shp'.format(gratreso))
 
     if lonlat_bounds is not None:
@@ -104,6 +105,11 @@ if __name__ == '__main__':
         '''
     else: 
         indusAll = tools.my_read_file(dirout+'industrialZone_osmSource.geojson')
+
+    mpl.rcdefaults()
+    #mpl.rcParams['legend.fontsize'] = 8
+    mpl.rcParams['xtick.labelsize'] = 8
+    mpl.rcParams['ytick.labelsize'] = 8
 
     fig = plt.figure(figsize=(10,8))
     ax = plt.subplot(111)

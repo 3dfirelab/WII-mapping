@@ -1,3 +1,9 @@
+'''
+https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_area
+'''
+
+russiaA = [['Russia', 'RUS', 17098246.],]
+
 africaA = [['Algeria', 'DZA', 2381741.],
           ['Angola','AGO', 1246700.], 
           ['Cameroon', 'CMR', 475442.], 

@@ -1,3 +1,5 @@
+russia = [['Russia','RUS', None ],]
+
 africa = [['Algeria', 'DZA', None],
           ['Angola','AGO', None], 
           ['Benin', 'BEN', None],
