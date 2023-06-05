@@ -25,7 +25,7 @@ warnings.filterwarnings("ignore")
 if __name__ == '__main__':
 
     
-    continent = 'oceania'
+    continent = 'russia'
     dir_data = tools.get_dirData()
 
     flag_onlyplot = False
@@ -34,7 +34,7 @@ if __name__ == '__main__':
         flag_loopIndus = 'inverse'
     
     if socket.gethostname() == 'ubu':     
-        flag_loopIndus = 'inverse'
+        flag_loopIndus = -240
     
     if socket.gethostname() == 'estrella':     
         flag_loopIndus = -166
