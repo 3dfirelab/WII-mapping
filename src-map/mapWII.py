@@ -102,9 +102,9 @@ if __name__ == '__main__':
     dirout = '{:s}Maps-Product/{:s}/'.format(dir_data,continent)
     tools.ensure_dir(dirout+'WII-perTyle/')
 
-    if os.path.isfile(dirout+'WII.geojon'):
+    if os.path.isfile(dirout+'WII.geojson'):
         print ('load WII ...')
-        WII_tot = gpd.read_file(dirout+'WII.geojon')
+        WII_tot = gpd.read_file(dirout+'WII.geojson')
 
 
     else:
@@ -132,7 +132,7 @@ if __name__ == '__main__':
 
         for indusFile in indusFiles:
             
-            WIIFile = dirout+'WII-perTyle/WII{:s}.geojon'.format(
+            WIIFile = dirout+'WII-perTyle/WII{:s}.geojson'.format(
                          os.path.basename(indusFile).split('trial-')[1].split('.geo')[0])
             if os.path.isfile(WIIFile):
                 print('{:s} '.format(os.path.basename(indusFile)), end='')
@@ -174,7 +174,7 @@ if __name__ == '__main__':
                     if len(WII)!=0:
                         WII.to_file(WIIFile, driver='GeoJSON')
                         if WII.crs.to_epsg() is None: 
-                            with open(WIIFile.replace('.geojon','.prj'),'w') as f:
+                            with open(WIIFile.replace('.geojson','.prj'),'w') as f:
                                 f.write(WII.crs.to_wkt())
 
 
@@ -189,7 +189,7 @@ if __name__ == '__main__':
                     WII_tot = pd.concat([WII_tot, WII])
 
         if socket.gethostname() == 'europa':
-            WII_tot.to_file(dirout+'WII.geojon',driver='GeoJSON')
+            WII_tot.to_file(dirout+'WII.geojson',driver='GeoJSON')
    
     if socket.gethostname() == 'europa':
     #if True:

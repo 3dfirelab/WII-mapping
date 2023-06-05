@@ -43,7 +43,10 @@ def my_read_file(filepath):
         tmp = gpd.read_file(filepath)
         with open(filepath.replace('.geojson','.prj'),'r') as f:
             lines = f.readlines()
-        tmp.set_crs(crs=lines[0], allow_override=True, inplace=True)
+        try:
+            tmp.set_crs(crs=lines[0], allow_override=True, inplace=True)
+        except: 
+            pdb.set_trace()
         return tmp
     else:
         return gpd.read_file(filepath)
