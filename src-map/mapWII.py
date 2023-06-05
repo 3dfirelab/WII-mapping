@@ -5,6 +5,7 @@ import geopandas as gpd
 import shapely 
 import glob
 import matplotlib as mpl
+#mpl.use('Agg')
 from matplotlib import pyplot as plt
 from shapely.geometry import Polygon
 import importlib
@@ -135,7 +136,7 @@ if __name__ == '__main__':
                          os.path.basename(indusFile).split('trial-')[1].split('.geo')[0])
             if os.path.isfile(WIIFile):
                 print('{:s} '.format(os.path.basename(indusFile)), end='')
-                WII = gpd.read_file(WIIFile)
+                WII = tools.my_read_file(WIIFile)
                 print ('... loaded', end='')
             else:
                 if flag_onlyplot: continue
@@ -171,7 +172,12 @@ if __name__ == '__main__':
 
                 if WII is not None: 
                     WII.to_file(WIIFile, driver='GeoJSON')
-            
+                    if WII.crs.to_epsg() is None: 
+                        with open(WIIFile.replace('.geojon','.prj'),'w') as f:
+                            f.write(WII.crs.to_wkt())
+
+
+
             print ('WII area_ha = ', WII.area.sum()*1.e-4 )
             
             if WII_tot is None: 
@@ -181,11 +187,11 @@ if __name__ == '__main__':
                 if WII.shape[0]!=0:
                     WII_tot = pd.concat([WII_tot, WII])
 
-        if socket.gethostname() == 'moritz':
+        if socket.gethostname() == 'europa':
             WII_tot.to_file(dirout+'WII.geojon',driver='GeoJSON')
    
-    #if socket.gethostname() == 'moritz':
-    if True:
+    if socket.gethostname() == 'europa':
+    #if True:
     
         mpl.rcdefaults()
         #mpl.rcParams['legend.fontsize'] = 8
