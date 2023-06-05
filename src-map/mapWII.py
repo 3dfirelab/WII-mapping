@@ -24,7 +24,7 @@ warnings.filterwarnings("ignore")
 if __name__ == '__main__':
 
     
-    continent = 'russia'
+    continent = 'africa'
     dir_data = tools.get_dirData()
 
     flag_onlyplot = False
@@ -175,7 +175,8 @@ if __name__ == '__main__':
             print ('WII area_ha = ', WII.area.sum()*1.e-4 )
             
             if WII_tot is None: 
-                WII_tot = WII
+                if WII.shape[0]!=0:
+                    WII_tot = WII
             else:
                 if WII.shape[0]!=0:
                     WII_tot = pd.concat([WII_tot, WII])
