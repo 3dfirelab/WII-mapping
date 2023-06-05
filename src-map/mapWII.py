@@ -4,6 +4,7 @@ import pandas as pd
 import geopandas as gpd
 import shapely 
 import glob
+import matplotlib as mpl
 from matplotlib import pyplot as plt
 from shapely.geometry import Polygon
 import importlib
@@ -23,7 +24,7 @@ warnings.filterwarnings("ignore")
 if __name__ == '__main__':
 
     
-    continent = 'samerica'
+    continent = 'russia'
     dir_data = tools.get_dirData()
 
     flag_onlyplot = False
@@ -102,7 +103,7 @@ if __name__ == '__main__':
 
     if os.path.isfile(dirout+'WII.geojon'):
         print ('load WII ...')
-        WII = gpd.read_file(dirout+'WII.geojon')
+        WII_tot = gpd.read_file(dirout+'WII.geojon')
 
 
     else:
@@ -204,12 +205,12 @@ if __name__ == '__main__':
       
         #set axis
         bbox = shapely.geometry.box(xminAll, yminAll, xmaxAll, ymaxAll)
-        geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+        geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=WII_tot.crs)
         geo['geometry'] = geo.boundary
         ptsEdge =  gpd.overlay(graticule, geo, how = 'intersection', keep_geom_type=False)
         
         lline = shapely.geometry.LineString([[xminAll,ymaxAll],[xmaxAll,ymaxAll]])
-        geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+        geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=WII_tot.crs)
         ptsEdgelon =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
         
         ax.xaxis.set_ticks(ptsEdgelon.geometry.centroid.x)
@@ -217,7 +218,7 @@ if __name__ == '__main__':
         ax.xaxis.tick_top()
         
         lline = shapely.geometry.LineString([[xminAll,yminAll],[xminAll,ymaxAll]])
-        geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
+        geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=WII_tot.crs)
         ptsEdgelat =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
 
         ax.yaxis.set_ticks(ptsEdgelat.geometry.centroid.y)
