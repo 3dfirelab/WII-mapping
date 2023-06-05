@@ -18,7 +18,7 @@ def load_param(continent):
         crs_here = '+proj=aea +lon_0=-263.671875 +lat_1=-1.5736574 +lat_2=42.3499669 +lat_0=20.3881547 +datum=WGS84 +units=m +no_defs' #'epsg:8859'
         bufferBorder = -10000
         distgroup = 1.e3
-        lonlat_bounds = None # not necessary here, this is to plot land background 
+        lonlat_bounds = [[0, -20, 170, 70.]] # no
         gratreso = 15
     
     elif continent == 'namerica':
