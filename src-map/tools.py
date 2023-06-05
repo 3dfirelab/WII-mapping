@@ -186,9 +186,9 @@ def buildWII(WII, iv, fuelCat, indus, continent):
         else: 
             indir = '{:s}CLC/'.format(get_dirData())
             to_latlon = pyproj.Transformer.from_crs(indus_.crs, 'epsg:4326')
-            if xmax-xmin < 100.e3: bbx = 100.e3 
+            if np.abs(xmax-xmin) < 100.e3: bbx = 50.e3 
             else: bbx = bb
-            if ymax-ymin < 100.e3: bby = 100.e3 
+            if np.abs(ymax-ymin) < 100.e3: bby = 50.e3 
             else: bby = bb
 
             lowerCorner = to_latlon.transform(xmin-bbx, ymin-bbx)
