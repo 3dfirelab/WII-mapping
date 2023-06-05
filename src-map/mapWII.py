@@ -5,6 +5,7 @@ import geopandas as gpd
 import shapely 
 import glob
 import matplotlib as mpl
+#mpl.use('Agg')
 from matplotlib import pyplot as plt
 from shapely.geometry import Polygon
 import importlib
@@ -24,7 +25,7 @@ warnings.filterwarnings("ignore")
 if __name__ == '__main__':
 
     
-    continent = 'africa'
+    continent = 'russia'
     dir_data = tools.get_dirData()
 
     flag_onlyplot = False
@@ -181,11 +182,11 @@ if __name__ == '__main__':
                 if WII.shape[0]!=0:
                     WII_tot = pd.concat([WII_tot, WII])
 
-        if socket.gethostname() == 'moritz':
+        if socket.gethostname() == 'europa':
             WII_tot.to_file(dirout+'WII.geojon',driver='GeoJSON')
    
-    #if socket.gethostname() == 'moritz':
-    if True:
+    if socket.gethostname() == 'europa':
+    #if True:
     
         mpl.rcdefaults()
         #mpl.rcParams['legend.fontsize'] = 8
