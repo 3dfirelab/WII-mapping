@@ -1,6 +1,13 @@
 '''
 https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_area
 '''
+oceaniaA = [
+            ['Australia', 'AU1', 7692024  ],
+            ['Fiji', 'FJI', 18272],
+            ['New Zealand', 'NZ1', 270467],
+            ['Papua New Guinea', 'PNG', 462840],
+            ['Tonga', 'TON', 747],
+            ]
 
 russiaA = [['Russia', 'RUS', 17098246.],]
 

@@ -77,7 +77,7 @@ if __name__ == '__main__':
     only plotting if out of europe
     '''
 
-    continent = 'russia'
+    continent = 'asia'
     #continent = 'samerica'
     
     importlib.reload(tools)
@@ -85,6 +85,7 @@ if __name__ == '__main__':
     importlib.reload(params)
   
     dir_data = tools.get_dirData()
+    print(continent)
 
     '''
     if continent == 'europe':

@@ -1,3 +1,28 @@
+oceania = [
+            ['Australia', 'AU1', None ], 
+            ['Cook Islands', 'NZ1', 'COK'],
+            ['Fiji', 'FJI', None ], 
+            ['Ile de Clipperton', 'FR1', 'CLP'], 
+            ['Kiribati', 'KIR', None],
+            ['Marshall Islands', 'MHL', None],
+            ['Micronesia', 'FSM', None], 
+            ['Nauru', 'NRU', None],
+            ['New Caledonia', 'FR1','NCL'],
+            ['New Zealand', 'NZ1', None],
+            ['Niue', 'NZ1', 'NIU'],
+            ['Palau', 'PLW', None],
+            ['Papua New Guinea', 'PNG', None],
+            ['Pitcairn Islands','GB1' , 'PCN'], 
+            ['polynesie-francaise','FR1' , 'PYF'],
+            ['Samoa', 'WSM', None],
+            ['Solomon Islands', 'SLB', None],
+            ['Tokelau', 'NZ1', None], 
+            ['Tonga', 'TON', None],
+            ['Tuvalu', 'TUV', None],
+            ['Vanuatu', 'VUT', None], 
+            ['Wallis et Futuna', 'FR1', 'WLF'], 
+        ]
+
 russia = [['Russia','RUS', None ],]
 
 africa = [['Algeria', 'DZA', None],
@@ -55,8 +80,8 @@ africa = [['Algeria', 'DZA', None],
           ['Uganda', 'UGA', None], 
           ['Zambia', 'ZMB', None], 
           ['Zimbabwe','ZWE', None],
-          ['Mayotte',None, None],
-          ['Reunion',None, None],
+          ['Mayotte','FR1', None],
+          ['Reunion','FR1', None],
           ]
 
 camerica = [['Anguilla',None,None],

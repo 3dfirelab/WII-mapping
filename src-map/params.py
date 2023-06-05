@@ -13,9 +13,9 @@ def load_param(continent):
         gratreso = 15
 
     elif continent == 'asia':
-        xminAll,xmaxAll = -1.057e7, -2.5e5
-        yminAll,ymaxAll = -1.74e6, 6.66e6
-        crs_here = 'epsg:8859'
+        xminAll,xmaxAll = -5.8e6, 5.5e6
+        yminAll,ymaxAll = -3.6e6, 4.44e6
+        crs_here = '+proj=aea +lon_0=-263.671875 +lat_1=-1.5736574 +lat_2=42.3499669 +lat_0=20.3881547 +datum=WGS84 +units=m +no_defs' #'epsg:8859'
         bufferBorder = -10000
         distgroup = 1.e3
         lonlat_bounds = None # not necessary here, this is to plot land background 
@@ -81,6 +81,16 @@ def load_param(continent):
         distgroup = 1.e3
         lonlat_bounds = [[-5, 0, 180, 90.],[-180,40,-150,90]] # no
         gratreso = 5
+    
+    elif continent == 'oceania':
+        xminAll,xmaxAll = -7.3e6, 3.8e6
+        yminAll,ymaxAll = -4.2e6,  3.8e6
+        crs_here = '+proj=aea +lon_0=-171.5625 +lat_1=-39.4044996 +lat_2=-2.4319777 +lat_0=-20.9182387 +datum=WGS84 +units=m +no_defs' #'EPSG:3832' 
+
+        bufferBorder = -10000
+        distgroup = 1.e3
+        lonlat_bounds = [[20, -65, 180, 30.],[-180,-65,-120,30]] # no
+        gratreso = 15
 
     params = {'xminAll': xminAll,
               'xmaxAll': xmaxAll, 
@@ -92,5 +102,6 @@ def load_param(continent):
               'lonlat_bounds':lonlat_bounds,
               'gratreso':gratreso
               }
+    
 
     return params

@@ -19,7 +19,7 @@ import params
 
 if __name__ == '__main__':
     
-    continent = 'russia'
+    continent = 'africa'
     dir_data = tools.get_dirData()
 
     importlib.reload(tools)

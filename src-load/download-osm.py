@@ -18,13 +18,13 @@ import tools
 
 if __name__ == '__main__':
 
-    continent = 'russia'
+    continent = 'oceania'
     dir_data = tools.get_dirData()
 
     print('continent = ', continent)
 
     importlib.reload(contries_mod)
-    from countries import europe, asia, namerica, samerica, camerica, africa, russia
+    from countries import europe, asia, namerica, samerica, camerica, africa, russia, oceania
     
     if continent == 'europe': 
         countries_selection = europe
@@ -47,6 +47,9 @@ if __name__ == '__main__':
     elif continent == 'russia': 
         countries_selection = russia
         continent_url = ''
+    elif continent == 'oceania': 
+        countries_selection = oceania
+        continent_url = 'australia-oceania'
 
     template_url = 'https://download.geofabrik.de/{:s}'.format(continent_url)+'/{:s}-latest.osm.pbf'
     template_url2 = 'https://download.openstreetmap.fr/extracts/{:s}'.format(continent_url)+'/{:s}-latest.osm.pbf'
@@ -124,6 +127,10 @@ if __name__ == '__main__':
         indir = '{:s}Boundaries//'.format(dir_data)
         borders = gpd.read_file(indir+'NaturalEarth_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
         xminContinent,yminContinent, xmaxContinent,ymaxContinent = [-180, 20, 180, 90.]
+    elif continent == 'oceania':
+        indir = '{:s}Boundaries//'.format(dir_data)
+        borders = gpd.read_file(indir+'NaturalEarth_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
+        xminContinent,yminContinent, xmaxContinent,ymaxContinent = [-180, -65, 180, 0.]
     
     '''
     countries_here = np.array(countries_selection)
@@ -157,7 +164,7 @@ if __name__ == '__main__':
                 else: 
                     borders_ = borders[(borders['LEVL_CODE']==1)&(borders['CNTR_CODE']==country_code)&(borders['NUTS_ID']==country_code2)]
             
-            elif (continent == 'asia') | (continent=='namerica')| (continent=='samerica')| (continent=='camerica')| (continent=='africa')| (continent=='russia'):
+            elif (continent == 'asia') | (continent=='namerica')| (continent=='samerica')| (continent=='camerica')| (continent=='africa')| (continent=='russia') | (continent=='oceania'):
                 if len(country_code.split(','))>1:
                     country_code_ = country_code.split(',')
                     condition = (borders['SOV_A3']==country_code_[0])

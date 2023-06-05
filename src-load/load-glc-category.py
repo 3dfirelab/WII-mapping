@@ -49,13 +49,16 @@ def clipped_fuelCat_raster(indir, iv, crs_here, xminContinent,yminContinent, xma
         
         #clip
         #bbox = shapely.geometry.box(lowerCorner[1], lowerCorner[0], upperCorner[1], upperCorner[0])
-        bbox = gpd.clip(bordersSelection,(xminContinent,yminContinent, xmaxContinent,ymaxContinent)).explode().buffer(-.01).to_crs('epsg:4326')
+        bbox = gpd.clip(bordersSelection,(xminContinent,yminContinent, xmaxContinent,ymaxContinent)).explode().buffer(-.01).to_crs('epsg:4326').reset_index().drop(['level_0','level_1'], axis=1)
+        
         geo = gpd.GeoDataFrame({'geometry': bbox[0].geometry}, index=range(len(bbox)),) 
         
         #geo = geo.to_crs(crs=src.crs.data)
         coords = getFeatures(geo)
-        data_, src_transform = mask(src, shapes=coords, crop=True)
-        
+        try:
+            data_, src_transform = mask(src, shapes=coords, crop=True)
+        except: 
+            pdb.set_trace()
         data_out, transform_out = tools.reproject_raster(data_[0], src_bounds, src_transform, geo.crs, crs_here,)
         data_ = None
         

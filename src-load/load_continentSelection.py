@@ -22,14 +22,14 @@ import tools
 if __name__ == '__main__':
    
     importlib.reload(params)
-    continent = 'russia'
+    continent = 'asia'
     dir_data = tools.get_dirData()
     
     print('continent = ', continent)
 
     importlib.reload(contries_mod)
-    from countries import europe, asia, namerica, samerica, camerica, africa, russia
-    from countries_area_check import europeA, asiaA, namericaA, samericaA, camericaA, africaA, russiaA
+    from countries import europe, asia, namerica, samerica, camerica, africa, russia, oceania
+    from countries_area_check import europeA, asiaA, namericaA, samericaA, camericaA, africaA, russiaA, oceaniaA
 
     if continent == 'europe': 
         countries_selection = np.array(europe)
@@ -57,6 +57,10 @@ if __name__ == '__main__':
     elif continent == 'russia': 
         countries_selection = russia
         countries_area = russiaA
+    
+    elif continent == 'oceania': 
+        countries_selection = oceania
+        countries_area = oceaniaA
     
     countries_selection = np.array(countries_selection)
     countries_area = np.array(countries_area)

@@ -24,7 +24,7 @@ warnings.filterwarnings("ignore")
 if __name__ == '__main__':
 
     
-    continent = 'africa'
+    continent = 'oceania'
     dir_data = tools.get_dirData()
 
     flag_onlyplot = False
