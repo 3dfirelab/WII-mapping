@@ -136,7 +136,7 @@ if __name__ == '__main__':
                          os.path.basename(indusFile).split('trial-')[1].split('.geo')[0])
             if os.path.isfile(WIIFile):
                 print('{:s} '.format(os.path.basename(indusFile)), end='')
-                WII = gpd.read_file(WIIFile)
+                WII = tools.my_read_file(WIIFile)
                 print ('... loaded', end='')
             else:
                 if flag_onlyplot: continue
@@ -172,7 +172,12 @@ if __name__ == '__main__':
 
                 if WII is not None: 
                     WII.to_file(WIIFile, driver='GeoJSON')
-            
+                    if WII.crs.to_epsg() is None: 
+                        with open(WIIFile.replace('.geojon','.prj'),'w') as f:
+                            f.write(WII.crs.to_wkt())
+
+
+
             print ('WII area_ha = ', WII.area.sum()*1.e-4 )
             
             if WII_tot is None: 
