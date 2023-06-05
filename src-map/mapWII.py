@@ -37,7 +37,7 @@ if __name__ == '__main__':
         flag_loopIndus = -240
     
     if socket.gethostname() == 'estrella':     
-        flag_loopIndus = -166
+        flag_loopIndus = 'inverse'
     
     importlib.reload(tools)
     importlib.reload(params)
