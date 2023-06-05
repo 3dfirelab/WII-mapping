@@ -77,7 +77,7 @@ if __name__ == '__main__':
     only plotting if out of europe
     '''
 
-    continent = 'asia'
+    continent = 'oceania'
     #continent = 'samerica'
     
     importlib.reload(tools)
@@ -180,7 +180,7 @@ if __name__ == '__main__':
     if type(fuelCat_all) is gpd.geodataframe.GeoDataFrame:
         fuelCat_all.plot(ax=ax, column='rank', legend=True, cmap=colors.ListedColormap(list(color_dict.values())),zorder=5)
     elif type(fuelCat_all) == np.ma.core.MaskedArray: 
-        im = ax.imshow(fuelCat_all, cmap=colors.ListedColormap(list(color_dict.values())),extent=(xminAll,xmaxAll,yminAll, ymaxAll),interpolation='nearest', zorder=5)
+        im = ax.imshow(fuelCat_all, cmap=colors.ListedColormap(list(color_dict.values())),extent=(xminAll,xmaxAll,yminAll, ymaxAll),interpolation='nearest', zorder=5, vmin=1,vmax=5)
         #legend=ep.draw_legend(
         #    im,
         #    titles=["vegetation category 1", "vegetation category 2", "vegetation category 3", "vegetation category 4", "vegetation category 5"],

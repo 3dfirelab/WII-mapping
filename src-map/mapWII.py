@@ -25,7 +25,7 @@ warnings.filterwarnings("ignore")
 if __name__ == '__main__':
 
     
-    continent = 'russia'
+    continent = 'oceania'
     dir_data = tools.get_dirData()
 
     flag_onlyplot = False
@@ -171,10 +171,11 @@ if __name__ == '__main__':
                     WII = tools.buildWII(WII, iv, fuelCat_all[iv-1], indus, continent)
 
                 if WII is not None: 
-                    WII.to_file(WIIFile, driver='GeoJSON')
-                    if WII.crs.to_epsg() is None: 
-                        with open(WIIFile.replace('.geojon','.prj'),'w') as f:
-                            f.write(WII.crs.to_wkt())
+                    if len(WII)!=0:
+                        WII.to_file(WIIFile, driver='GeoJSON')
+                        if WII.crs.to_epsg() is None: 
+                            with open(WIIFile.replace('.geojon','.prj'),'w') as f:
+                                f.write(WII.crs.to_wkt())
 
 
 
