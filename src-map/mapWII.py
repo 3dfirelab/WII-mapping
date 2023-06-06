@@ -5,7 +5,7 @@ import geopandas as gpd
 import shapely 
 import glob
 import matplotlib as mpl
-#mpl.use('Agg')
+mpl.use('Agg')
 from matplotlib import pyplot as plt
 from shapely.geometry import Polygon
 import importlib
@@ -15,6 +15,7 @@ import pyproj
 from fiona.crs import from_epsg
 import socket 
 import numpy as np 
+import argparse
 
 #homebrewed
 import tools
@@ -24,8 +25,13 @@ warnings.filterwarnings("ignore")
 
 if __name__ == '__main__':
 
+    parser = argparse.ArgumentParser(description='map WII')
+    parser.add_argument('-c','--continent', help='continent name',required=True)
+    args = parser.parse_args()
+
+    continent = args.continent
+    #continent = 'russia'
     
-    continent = 'oceania'
     dir_data = tools.get_dirData()
 
     flag_onlyplot = False

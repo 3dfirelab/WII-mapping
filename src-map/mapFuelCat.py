@@ -18,7 +18,7 @@ from fiona.crs import from_epsg
 import socket
 import pdb 
 import pickle 
-
+import argparse
 
 #homebrewed
 import params
@@ -76,8 +76,12 @@ if __name__ == '__main__':
     '''
     only plotting if out of europe
     '''
+    parser = argparse.ArgumentParser(description='map Fuel')
+    parser.add_argument('-c','--continent', help='continent name',required=True)
+    args = parser.parse_args()
 
-    continent = 'asia'
+    continent = args.continent
+    #continent = 'asia'
     #continent = 'samerica'
     
     importlib.reload(tools)

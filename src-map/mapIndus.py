@@ -12,6 +12,7 @@ import warnings
 import pyproj
 from fiona.crs import from_epsg
 import pdb 
+import argparse
 
 #homebrewed
 import tools
@@ -19,7 +20,13 @@ import params
 
 if __name__ == '__main__':
     
-    continent = 'asia'
+    parser = argparse.ArgumentParser(description='map Industrial area')
+    parser.add_argument('-c','--continent', help='continent name',required=True)
+    args = parser.parse_args()  
+
+    continent = args.continent
+    #continent = 'asia'
+    
     dir_data = tools.get_dirData()
 
     importlib.reload(tools)
