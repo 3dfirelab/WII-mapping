@@ -215,8 +215,11 @@ def buildWII(WII, iv, fuelCat, indus, continent):
 
             indus__ = indus_.copy()
             indus__['geometry'] = indus_.geometry.apply(lambda g: g.buffer(bufferDistVegCat_))
-        
-            WII_ = gpd.overlay(fuelCat__, indus__, how = 'intersection', keep_geom_type=False)
+       
+            if len(fuelCat__)>0:
+                WII_ = gpd.overlay(fuelCat__, indus__, how = 'intersection', keep_geom_type=False)
+            else: 
+                continue 
 
             if WII is None: 
                 WII = WII_

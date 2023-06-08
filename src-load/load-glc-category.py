@@ -96,9 +96,18 @@ def clipped_fuelCat_gdf(indir, iv, crs, xminContinent,yminContinent, xmaxContine
 
     gdflc = None
     with rasterio.open(filein) as src:
+     
+        if yminContinent > src.bounds.top: 
+            return gpd.GeoDataFrame()
+        
+        if ymaxContinent < src.bounds.bottom: 
+            return gpd.GeoDataFrame()
         
         #clip
-        bbox = shapely.geometry.box(xminContinent,yminContinent, xmaxContinent,ymaxContinent)
+        bbox = shapely.geometry.box(xminContinent,
+                                    max(yminContinent,src.bounds.bottom),
+                                    xmaxContinent,
+                                    min(ymaxContinent,src.bounds.top))
         geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(4326))
         #geo = geo.to_crs(crs=src.crs.data)
         coords = getFeatures(geo)
@@ -132,6 +141,7 @@ def clipped_fuelCat_gdf(indir, iv, crs, xminContinent,yminContinent, xmaxContine
         gdf = gpd.GeoDataFrame(dict(zip(["geometry", "class"], zip(*shape_gen))), crs=src.crs)
 
         return gdf.to_crs(crs)
+
 
 def fctunion(x):
     return x.buffer(1).unary_union.buffer(-1)
