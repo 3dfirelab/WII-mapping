@@ -194,10 +194,13 @@ if __name__ == '__main__':
                 if WII.shape[0]!=0:
                     WII_tot = pd.concat([WII_tot, WII])
 
-        if socket.gethostname() == 'europa':
+        if (socket.gethostname() == 'europa') | (socket.gethostname() == 'moritz'):
             WII_tot.to_file(dirout+'WII.geojson',driver='GeoJSON')
-   
-    if socket.gethostname() == 'europa':
+            if WII_tot.crs.to_epsg() is None:
+                with open(dirout+'WII.prj','w') as f:
+                    f.write(WII_tot.crs.to_wkt())
+
+    if (socket.gethostname() == 'europa') | (socket.gethostname() == 'moritz'):
     #if True:
     
         mpl.rcdefaults()
