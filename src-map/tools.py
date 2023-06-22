@@ -335,14 +335,15 @@ def reproject_raster(src_band, src_bounds, src_transform, src_crs, dst_crs, reso
     dst_transform, width, height = calculate_default_transform(
         src_crs,
         dst_crs,
-        src_band.shape[0],
         src_band.shape[1],
+        src_band.shape[2],
         *src_bounds,  # unpacks outer boundaries (left, bottom, right, top)
         resolution=resolution
     )
     dst_band = np.zeros([height, width])
 
-    return  reproject(
+    try: 
+        return  reproject(
         source=src_band,
         destination=dst_band,
         src_transform=src_transform,
@@ -351,7 +352,8 @@ def reproject_raster(src_band, src_bounds, src_transform, src_crs, dst_crs, reso
         dst_crs=dst_crs,
         dst_nodata=-999,
         resampling=Resampling.nearest)
-    
+    except:
+        pdb.set_trace()
 
 
 ##########################
