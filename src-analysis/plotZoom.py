@@ -24,32 +24,34 @@ sys.path.append('../src-map/')
 import tools
 import mapFuelCat
 glc = importlib.import_module("load-glc-category")
+import params 
+
 
 warnings.filterwarnings("ignore")
 
 if __name__ == '__main__':
 
+    dir_data = tools.get_dirData()
     continent = 'europe'
     flag_onlyplot = True
 
     #importlib.reload(tools)
-    
+    params = params.load_param(continent)
+    xminAll,xmaxAll = params['xminAll'], params['xmaxAll']
+    yminAll,ymaxAll = params['yminAll'], params['ymaxAll']
+    crs_here        = params['crs_here']
+    bufferBorder    = params['bufferBorder']
+    lonlat_bounds   = params['lonlat_bounds']
+    gratreso        = params['gratreso']
+
     if continent == 'europe':
-        xminAll,xmaxAll = 2500000., 7400000.
-        yminAll,ymaxAll = 1400000., 5440568.
-        crs_here = 'epsg:3035'
-        distgroup = 5.e3
         xminHere,xmaxHere = 3.6370e6, 3.6760e6 
         yminHere,ymaxHere = 2.0805e6, 2.1159e6 
-        filein = '/mnt/data/WII/TrueColor/2023-03-03-00 00_2023-03-03-23 59_Sentinel-2_L2A_True_color.tiff'
-    
-    elif continent == 'asia':
-        print('********* not set -- stop here')
+        filein = '{:s}/TrueColor/2023-03-03-00 00_2023-03-03-23 59_Sentinel-2_L2A_True_color.tiff'.format(dir_data)
+ 
+    else: 
+        print('working for europe')
         sys.exit()
-        xminAll,xmaxAll = -1.315e7, -6.e4
-        yminAll,ymaxAll = -1.79e6, 7.93e6
-        crs_here = 'epsg:3832'
-        distgroup = 1.e3
   
     to_latlon=pyproj.Transformer.from_crs(crs_here, 'epsg:4326')
     xmean = .5*(xminHere+xmaxHere)
@@ -69,7 +71,7 @@ if __name__ == '__main__':
        
         data_out = []
         for xx in range(3):
-            band_, transform_dst = tools.reproject_raster(data_[xx], geo.total_bounds , src_transform, geo.crs, crs_here, resolution=60)
+            band_, transform_dst = tools.reproject_raster(data_[xx][np.newaxis, ...], geo.total_bounds , src_transform, geo.crs, crs_here, resolution=60)
             
             if xx == 0: 
                 transformer = rasterio.transform.AffineTransformer(transform_dst)
@@ -82,10 +84,41 @@ if __name__ == '__main__':
     data_out = np.transpose(data_out,[1,2,0])
     norm = (data_out * (255 / np.max(data_out))).astype(np.uint8)
 
-
-
     #borders
-    indir = '/mnt/dataEstrella/WII/Boundaries/'
+    indir = '{:s}Boundaries/'.format(dir_data)
+    if continent == 'europe':
+        bordersNUTS = gpd.read_file(indir+'NUTS/NUTS_RG_01M_2021_4326.geojson')
+        bordersNUST = bordersNUTS.to_crs(crs_here)
+        extraNUTS = gpd.read_file(indir+'noNUTS.geojson')
+        extraNUST = extraNUTS.to_crs(crs_here)
+        bordersSelection = pd.concat([bordersNUST,extraNUST])
+    else:
+        bordersSelection = tools.my_read_file(indir+'mask_{:s}.geojson'.format(continent))
+        bordersSelection = bordersSelection[['SOV_A3', 'geometry', 'LEVL_CODE']]
+        bordersSelection = bordersSelection.dissolve(by='SOV_A3', aggfunc='sum').reset_index()
+    bordersSelection = bordersSelection.to_crs(crs_here)
+   
+    #if continent == 'russia':
+    #    bordersSelection['geometry'] = bordersSelection.buffer(.5).buffer(-.5) # pb at 180 to -180. close small gap
+
+    landNE = gpd.read_file(indir+'NaturalEarth_10m_physical/ne_10m_land.shp')
+    #load graticule
+    #gratreso = 5
+    graticule = gpd.read_file(indir+'NaturalEarth_graticules/ne_110m_graticules_{:d}.shp'.format(gratreso))
+
+    if lonlat_bounds is not None:
+        landNE_ = pd.concat( [ gpd.clip(landNE,lonlat_bounds_) for lonlat_bounds_ in lonlat_bounds])
+        graticule_ = pd.concat( [ gpd.clip(graticule,lonlat_bounds_) for lonlat_bounds_ in lonlat_bounds])
+    else: 
+        landNE_ = landNE
+        graticule_= graticule
+
+    landNE = landNE_.to_crs(crs_here)
+    graticule = graticule_.to_crs(crs_here)
+
+    '''
+    #borders
+    indir = '/mnt/dataEuropa/WII/Boundaries/'
     if continent == 'europe':
         bordersNUTS = gpd.read_file(indir+'NUTS/NUTS_RG_01M_2021_4326.geojson')
         bordersNUST = bordersNUTS.to_crs(crs_here)
@@ -103,17 +136,18 @@ if __name__ == '__main__':
     gratreso = 15
     graticule = gpd.read_file(indir+'NaturalEarth_graticules/ne_110m_graticules_{:d}.shp'.format(gratreso))
     graticule = graticule.to_crs(crs_here)
+    '''
 
     #industrial zone
-    indir = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
-    indusAll = gpd.read_file(indir+'industrialZone_osmSource.geojon')
+    indir = '{:s}/Maps-Product/{:s}/'.format(dir_data, continent)
+    indusAll = gpd.read_file(indir+'industrialZone_osmSource.geojson')
     
     #WII
-    indir = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
-    WIIAll = gpd.read_file(indir+'WII.geojon')
+    indir = '{:s}/Maps-Product/{:s}/'.format(dir_data, continent)
+    WIIAll = gpd.read_file(indir+'WII-unary_union.geojson')
    
     #Fuel
-    idxclc, fuelCat_all = mapFuelCat.loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll)
+    idxclc, fuelCat_all = mapFuelCat.loadFuelCat(dir_data, continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll, bordersSelection)
     
     #add hazard
     if continent == 'europe':
@@ -128,7 +162,7 @@ if __name__ == '__main__':
         print('****** no fire hazard rank available here for continent = '.format(continent))
         sys.exit()
 
-    dirout = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
+    dirout = '{:s}/Maps-Product/{:s}/'.format(dir_data,continent)
 
 
     #plot geo
@@ -245,7 +279,22 @@ if __name__ == '__main__':
                   'hazard category 6':colorCat[5],
                   'hazard category 7':colorCat[6], }
     
-    fuelCat_all.cx[xminHere:xmaxHere, yminHere:ymaxHere].plot(ax=ax, column='FH_rank', legend=True, cmap=colors.ListedColormap(list(color_dict.values())),zorder=4)
+    hatches = ['///////', '', '+++', '', '', '', 'oooo']
+    edgecolors = list(color_dict.values())
+    facecolors = ['w', edgecolors[1], 'w', edgecolors[3], 'w', 'w', 'w']
+
+    polys = []
+    labels = []
+    for ic in np.arange(1,8):
+        fuelcati_ = fuelCat_all[(fuelCat_all['FH_rank'] == list(color_dict.keys())[ic-1])].cx[xminHere:xmaxHere, yminHere:ymaxHere]
+        if fuelcati_.shape[0]>0:
+            fuelcati_.plot(ax=ax,facecolor=facecolors[ic-1], hatch=hatches[ic-1], edgecolor=edgecolors[ic-1], linewidth=0.2, zorder=4) 
+            labels.append( list(color_dict.keys())[ic-1] )
+            polys.append( mpl.patches.Polygon(shape, facecolor=facecolors[ic-1], edgecolor=edgecolors[ic-1], linewidth=0.2, hatch=hatches[ic-1]) )
+    ax.legend(polys, labels, )
+
+    #fuelCat_all[fuelCat_all['FH_rank']==1].cx[xminHere:xmaxHere, yminHere:ymaxHere].plot(ax=ax, column='FH_rank', legend=True, cmap=colors.ListedColormap(list(color_dict.values())),hatch='\\', zorder=4)
+    #fuelCat_all[fuelCat_all['FH_rank']==2].cx[xminHere:xmaxHere, yminHere:ymaxHere].plot(ax=ax, column='FH_rank', legend=True, cmap=colors.ListedColormap(list(color_dict.values())), zorder=4)
     indusAll.cx[xminHere:xmaxHere, yminHere:ymaxHere].plot(ax=ax, facecolor='k', edgecolor='k', linewidth=.2,zorder=5,)
     
     ax.set_xlim(xminHere,xmaxHere)

@@ -79,7 +79,7 @@ def fuelCatAreaFromraster(indir, geoMask, checkName, xminContinent,yminContinent
     filein = indir + 'PROBAV_LC100_global_v3.0.1_2018-conso_Discrete-Classification-map_EPSG-4326.tif'
     crs_here = geoMask.crs 
     
-    totalArea = np.zeros(5)
+    totalArea = np.zeros([5])
 
     #rasterlc = []
     reso = 1.e2
@@ -185,8 +185,8 @@ if __name__ == '__main__':
         #bordersSelection = gpd.read_file(indir+'mask_{:s}.geojson'.format(continent))
         #bordersSelection = bordersSelection.dissolve(by='SOV_A3', aggfunc='sum')
         bordersSelection = tools.my_read_file(indir+'mask_{:s}.geojson'.format(continent))
-        bordersSelection = bordersSelection[['SOV_A3', 'geometry', 'LEVL_CODE']]
-        bordersSelection = bordersSelection.dissolve(by='SOV_A3', aggfunc='sum').reset_index()
+        bordersSelection = bordersSelection[['SOV_A3', 'geometry', 'LEVL_CODE', 'NAME']]
+        bordersSelection = bordersSelection.dissolve(by='NAME', aggfunc='sum').reset_index()
         #print('******')
         #print('need a conversion to polygon for fuelCat_all for asia')
         #print('or need to change totalAreaFuelCat caclulation below')
@@ -212,6 +212,7 @@ if __name__ == '__main__':
 
     if continent == 'europe':
         provinces = bordersNUST[bordersNUST['LEVL_CODE']==3].reset_index()
+        provincesAll = gpd.read_file(indir+'NaturalEarth_10m_admin_1_states_provinces/ne_10m_admin_1_states_provinces.shp')
     else:
         provinces = gpd.read_file(indir+'NaturalEarth_10m_admin_1_states_provinces/ne_10m_admin_1_states_provinces.shp')
 
@@ -219,18 +220,31 @@ if __name__ == '__main__':
         #bounds_ = np.array(lonlat_bounds)
         #provinces = provinces.cx[bounds_.min(axis=0)[0]:bounds_.min(axis=0)[2],bounds_.min(axis=0)[1]:bounds_.min(axis=0)[3]]
         provinces_ = pd.concat( [ gpd.clip(provinces,lonlat_bounds_) for lonlat_bounds_ in lonlat_bounds])
+        if continent == 'europe':
+            provincesAll_ = pd.concat( [ gpd.clip(provincesAll,lonlat_bounds_) for lonlat_bounds_ in lonlat_bounds])
+        
     else:
         provinces_ = provinces
+        if continent == 'europe':
+            provincesAll_ = provincesAll
+    
     provinces = provinces_.to_crs(crs_here)
+    if continent == 'europe':
+        provincesAll = provincesAll_.to_crs(crs_here)
 
     #industrial zone
     indir = '{:s}/Maps-Product/{:s}/'.format(dir_data,continent)
     indus = tools.my_read_file(indir+'industrialZone_osmSource.geojson')
+    
     #WII
-    WII = tools.my_read_file(indir+'WII.geojson')
+    try: 
+        WII = tools.my_read_file(indir+'WII-unary_union.geojson')
+    except: 
+        print('need to run globAll.py before runing the ratio computation')
+    
     #FuelCat
     if continent == 'europe':
-        idxclc, fuelCat_all = mapFuelCat.loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll)
+        idxclc, fuelCat_all = mapFuelCat.loadFuelCat(dir_data, continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll,bordersSelection)
     else: 
         fuelCat_all = None
 
@@ -243,11 +257,13 @@ if __name__ == '__main__':
         selection = bordersSelection[bordersSelection['LEVL_CODE']==0].reset_index()
         selection['WIIoverIndus'] = -999
         selection['WIIoverFuel'] = -999
+        if continent == 'europe': selection = selection.rename(columns={'NAME_LATN':'NAME'})
+        
         nn = len(selection)
         selection = gpd.clip( selection, (xminAll, yminAll, xmaxAll, ymaxAll))
         
         for ipoly in range(len(selection)):
-            print('{:05.1f} % -- {:s}'.format(100*ipoly/nn, selection.loc[ipoly,'SOV_A3']), end='\r')
+            print('{:05.1f} % -- {:s}'.format(100*ipoly/nn, selection.loc[ipoly,'NAME']), end='\r')
             sys.stdout.flush()
             sxmin, symin, sxmax, symax = selection[ipoly:ipoly+1].total_bounds
             
@@ -264,7 +280,7 @@ if __name__ == '__main__':
 
             else:
                 indir = '{:s}/CLC/'.format(dir_data)
-                totalAreaFuelCat = fuelCatAreaFromraster(indir, selection[ipoly:ipoly+1], selection.loc[ipoly,'SOV_A3'], xminAll,yminAll, xmaxAll,ymaxAll) 
+                totalAreaFuelCat = fuelCatAreaFromraster(indir, selection[ipoly:ipoly+1], selection.loc[ipoly,'NAME'], xminAll,yminAll, xmaxAll,ymaxAll) 
 
             if totalAreaFuelCat.sum() > selection[ipoly:ipoly+1].area.sum() : 
                 pdb.set_trace()
@@ -366,37 +382,54 @@ if __name__ == '__main__':
     
     #per province
     ############
-    print('per province:')
+    print('{:s} per province:'.format(continent))
     selection = bordersSelection[bordersSelection['LEVL_CODE']==0]
     selection = gpd.clip( selection, (xminAll, yminAll, xmaxAll, ymaxAll)).reset_index()
+    if continent == 'europe': 
+        selection = selection.drop(columns='NAME')
+        selection = selection.rename(columns={'NAME_LATN':'NAME'})
     nnC = len(selection)
    
-    outgdf = gpd.GeoDataFrame(columns=['id','geometry','WIIoverIndus','WIIoverFuel','IndusAera_ha','WIIAera_ha','CountrySize_ha','FuelAera_ha',
+    outgdf = gpd.GeoDataFrame(columns=['id','geometry','WIIoverIndus','WIIoverFuel','IndusAera_ha','WIIAera_ha','ProvinceSize_ha','FuelAera_ha',
                                        'FuelCatAera1_ha','FuelCatAera2_ha','FuelCatAera3_ha','FuelCatAera4_ha','FuelCatAera5_ha',
                                        'nameCountry','nameProvince'], geometry='geometry', crs=WII.crs)
   
-    outgdf['id'] = outgdf['id'].astype(int)
-    for xx in ['WIIoverIndus','WIIoverFuel','IndusAera_ha','WIIAera_ha','CountrySize_ha','FuelAera_ha',
-               'FuelCatAera1_ha','FuelCatAera2_ha','FuelCatAera3_ha','FuelCatAera4_ha','FuelCatAera5_ha',]:
-        outgdf[xx] = outgdf[xx].astype(float)
-    outgdf['nameCountry'] = outgdf['nameCountry'].astype(int)
-    outgdf['nameProvince'] = outgdf['nameProvince'].astype(int)
+    #outgdf['id'] = outgdf['id'].astype(int)
+    #for xx in ['WIIoverIndus','WIIoverFuel','IndusAera_ha','WIIAera_ha','ProvinceSize_ha','FuelAera_ha',
+    #           'FuelCatAera1_ha','FuelCatAera2_ha','FuelCatAera3_ha','FuelCatAera4_ha','FuelCatAera5_ha',]:
+    #    outgdf[xx] = outgdf[xx].astype(float)
+    #outgdf['nameCountry'] = outgdf['nameCountry'].astype(int)
+    #outgdf['nameProvince'] = outgdf['nameProvince'].astype(int)
 
     ii = 0
     for ipolyC in range(len(selection)):
 
         tmp = selection[ipolyC:ipolyC+1]
         tmp['geometry'] = tmp.geometry.buffer(-0.5)
-        selectionProv = gpd.overlay(tmp, provinces, how = 'intersection', keep_geom_type=False)
-     
+
+        if continent == 'europe':
+            if selection[ipolyC:ipolyC+1]['scalerank'].isnull().values[0]: # NUTS
+                selectionProv = gpd.overlay(tmp, provinces, how = 'intersection', keep_geom_type=False)
+                selectionProv = selectionProv.rename(columns={'NUTS_NAME_2':'name'})
+            else: 
+                selectionProv = gpd.overlay(tmp, provincesAll, how = 'intersection', keep_geom_type=False)
+                selectionProv = selectionProv.rename(columns={'NAME_LATN_2':'name'})
+
+        else: 
+            selectionProv = gpd.overlay(tmp, provinces, how = 'intersection', keep_geom_type=False)
+            selectionProv = selectionProv.rename(columns={'NAME_LATN_2':'name'})
+
         if selectionProv['name'].isnull().values.any():
             selectionProv.loc[selectionProv['name'].isnull(),'name'] = 'no name'
 
         selectionProv = selectionProv.reset_index()
         nn = len(selectionProv)
         
+        #if selection.loc[ipolyC,'NAME'] != 'Kosovo': continue
+        
         for ipoly in range(len(selectionProv)):
-            print('{:05.1f} % -- {:5s} | {:s}                          '.format(100*ipoly/nn, selection.loc[ipolyC,'SOV_A3'], selectionProv.loc[ipoly,'name']), end='\r')
+            print('{:5.1f}% -- {:5s} | {:05.1f}% -- {:s}                          '.format(100.*ipolyC/nnC, selection.loc[ipolyC,'NAME'], 
+                                                                                           100.*ipoly/nn,selectionProv.loc[ipoly,'name']), end='\r')
             sys.stdout.flush()
             sxmin, symin, sxmax, symax = selectionProv[ipoly:ipoly+1].total_bounds
             
@@ -409,7 +442,9 @@ if __name__ == '__main__':
             if type(fuelCat_all) is gpd.GeoDataFrame :
                 tmp = fuelCat_all.cx[sxmin:sxmax,symin:symax]
                 fuelCat_all_ = gpd.overlay(selectionProv[ipoly:ipoly+1], tmp, how = 'intersection', keep_geom_type=False)
-                AreaFuelCat = fuelCat_all_.area.sum()*1.e-4
+                AreaFuelCat = np.zeros([5])
+                for iv in range(1,6): 
+                    AreaFuelCat[iv-1] = fuelCat_all_[fuelCat_all_['ICat']==iv].area.sum()*1.e-4
 
             else:
                 indir = '{:s}/CLC/'.format(dir_data)
@@ -430,7 +465,7 @@ if __name__ == '__main__':
             outgdf.loc[ii] = selectionProv.loc[ipoly] # to set the geometry
             
             outgdf.loc[ii,'id'] = ii
-            outgdf.loc[ii,'nameCountry'] = selection.loc[ipolyC,'SOV_A3']
+            outgdf.loc[ii,'nameCountry'] = selection.loc[ipolyC,'NAME']
             outgdf.loc[ii,'nameProvince'] = selectionProv.loc[ipoly,'name']
 
             outgdf.loc[ii,'WIIAera_ha'] = WII_.area.sum()*1.e-4
@@ -449,16 +484,18 @@ if __name__ == '__main__':
 
             if  outgdf.loc[ii,'geometry'] is None: pdb.set_trace()
 
+            #if selection.loc[ipolyC,'NAME'] == 'Kosovo': pdb.set_trace()
+
             ii+= 1
     
     outgdf['id'] = outgdf['id'].astype(int)
-    for xx in ['WIIoverIndus','WIIoverFuel','IndusAera_ha','WIIAera_ha','CountrySize_ha','FuelAera_ha',
+    for xx in ['WIIoverIndus','WIIoverFuel','IndusAera_ha','WIIAera_ha','ProvinceSize_ha','FuelAera_ha',
                'FuelCatAera1_ha','FuelCatAera2_ha','FuelCatAera3_ha','FuelCatAera4_ha','FuelCatAera5_ha',]:
         outgdf[xx] = outgdf[xx].astype(float)
     outgdf['nameCountry'] = outgdf['nameCountry'].astype(str)
     outgdf['nameProvince'] = outgdf['nameProvince'].astype(str)
-
-
+    outgdf = outgdf.set_crs(crs_here)
+    print('                                                 ', end='\r')
 
     #plot
     #####
@@ -535,6 +572,9 @@ if __name__ == '__main__':
     fig.savefig(dirout+'RatioWIIoverFuel_province.png',dpi=200)
     plt.close(fig)
 
+    #save geojson
+    #######
+    outgdf.to_crs('epsg:4326').to_file(dirout+'{:s}_info_province.geojson'.format(continent), driver='GeoJSON')
 
     #save csv
     #########

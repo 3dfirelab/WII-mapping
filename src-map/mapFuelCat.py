@@ -27,7 +27,7 @@ sys.path.append('../src-load/')
 glc = importlib.import_module("load-glc-category")
 
 
-def loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll,bordersSelection):
+def loadFuelCat(dir_data, continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll,bordersSelection):
 
     idxclc = range(1,6)
     
@@ -159,7 +159,7 @@ if __name__ == '__main__':
   
   
     if not(os.path.isfile(dirout+'FuelCatArea_CLC.pickle')):
-        idxclc, fuelCat_all = loadFuelCat(continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll,bordersSelection)
+        idxclc, fuelCat_all = loadFuelCat(dir_data, continent, crs_here, xminAll, yminAll, xmaxAll, ymaxAll,bordersSelection)
         with  open(dirout+'FuelCatArea_CLC.pickle', 'wb') as f :
             pickle.dump([idxclc, fuelCat_all], f )
     else:
