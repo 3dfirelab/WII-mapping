@@ -30,8 +30,8 @@ def clipped_fuelCat_raster(indir, iv, crs_here, xminContinent,yminContinent, xma
         
     to_latlon = pyproj.Transformer.from_crs(crs_here, 'epsg:4326')
 
-    lowerCorner = to_latlon.transform(xminContinent, yminContinent)
-    upperCorner = to_latlon.transform(xmaxContinent, ymaxContinent)
+    lowerCorner = to_latlon.transform(yminContinent, xminContinent)
+    upperCorner = to_latlon.transform(ymaxContinent, xmaxContinent)
 
     src_bounds = (lowerCorner[1], lowerCorner[0], upperCorner[1], upperCorner[0])
     #print('fuel global lc')
@@ -59,7 +59,7 @@ def clipped_fuelCat_raster(indir, iv, crs_here, xminContinent,yminContinent, xma
             data_, src_transform = mask(src, shapes=coords, crop=True)
         except: 
             pdb.set_trace()
-        data_out, transform_out = tools.reproject_raster(data_[0], src_bounds, src_transform, geo.crs, crs_here,)
+        data_out, transform_out = tools.reproject_raster(data_, src_bounds, src_transform, geo.crs, crs_here,)
         data_ = None
         
         rev = ~transform_out # inverse transformation
@@ -78,7 +78,6 @@ def clipped_fuelCat_raster(indir, iv, crs_here, xminContinent,yminContinent, xma
                 condition &= (data_out!=xx)
         data_out_masked = np.ma.masked_where(condition,data_out)
 
-        print(data_out_masked.shape)
     return data_out_masked
 
 

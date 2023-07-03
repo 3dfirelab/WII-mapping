@@ -1,6 +1,11 @@
 '''
 https://en.wikipedia.org/wiki/List_of_countries_and_dependencies_by_area
 '''
+easteuropeA = [
+              ['Ukraine','UKR',  603550.],
+              ['Belarus','BLR',  207600.],
+              ['Moldova','MDA',   33846.]
+              ]
 oceaniaA = [
             ['Australia', 'AU1', 7692024  ],
             ['Fiji', 'FJI', 18272],

@@ -21,7 +21,7 @@ if __name__ == '__main__':
     importlib.reload(tools)
     importlib.reload(params)
 
-    continents = ['africa', 'namerica', 'camerica', 'samerica', 'russia', 'oceania',] #'europe'# 'asia']
+    continents = ['africa', 'namerica', 'camerica', 'samerica', 'russia', 'oceania', 'europe', 'asia']
     outdir = '{:s}/Maps-Product/World-Final/'.format(dir_data)
     tools.ensure_dir(outdir)
 
@@ -51,3 +51,6 @@ if __name__ == '__main__':
 
 
     mapProv.to_file(outdir+'info_province-world.geojson',driver='GeoJSON')
+
+
+

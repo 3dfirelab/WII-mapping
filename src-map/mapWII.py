@@ -167,6 +167,7 @@ if __name__ == '__main__':
 
                 indus['area_ha'] = indus['geometry'].area/ 10**4
                 indus = indus[indus['area_ha']>1]
+                indus = gpd.overlay(indus, bordersSelection, how = 'intersection', keep_geom_type=False)
                 print(' ', indus.shape)
                 
                 if indus.shape[0] == 0:

@@ -21,7 +21,7 @@ if __name__ == '__main__':
     importlib.reload(tools)
     importlib.reload(params)
 
-    continents = ['africa', 'namerica', 'camerica', 'samerica', 'europe', 'russia', 'oceania',]# 'asia']
+    continents = ['africa', 'namerica', 'camerica', 'samerica', 'europe', 'russia', 'oceania', 'asia']
     outdir = '{:s}/Maps-Product/World-Final/'.format(dir_data)
     tools.ensure_dir(outdir)
 
