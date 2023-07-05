@@ -94,13 +94,13 @@ def load_param(continent):
     
     elif continent == 'easteurope':
         #lonlat_bounds = [[-180,5,10,90],],
-        xminAll,xmaxAll = 1.06e5, 1.935e6
-        yminAll,ymaxAll = 4.84e6,  6.42e6
+        xminAll,xmaxAll = 3.05e5, 2.52e6
+        yminAll,ymaxAll = 4.67e6,  6.307e6
         crs_here = 'epsg:6381'
 
         bufferBorder = -1000
         distgroup = 1.e3
-        lonlat_bounds = [[18., 40. , 45., 60.]] # no
+        lonlat_bounds = [[18., 35. , 55., 60.]] # no
         gratreso = 5
 
     params = {'xminAll': xminAll,

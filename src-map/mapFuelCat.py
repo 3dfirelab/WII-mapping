@@ -171,10 +171,16 @@ if __name__ == '__main__':
     #plot
     mpl.rcdefaults()
     #mpl.rcParams['legend.fontsize'] = 8
-    mpl.rcParams['xtick.labelsize'] = 8
-    mpl.rcParams['ytick.labelsize'] = 8
+    mpl.rcParams['font.size'] = 14
+    mpl.rcParams['xtick.labelsize'] = 14
+    mpl.rcParams['ytick.labelsize'] = 14
+    mpl.rcParams['figure.subplot.left'] = .1
+    mpl.rcParams['figure.subplot.right'] = .95
+    mpl.rcParams['figure.subplot.top'] = .9
+    mpl.rcParams['figure.subplot.bottom'] = .05
 
-    fig = plt.figure(figsize=(10,8))
+    ratio_ = (ymaxAll-yminAll)/(xmaxAll-xminAll)
+    fig = plt.figure(figsize=(10,(np.round(ratio_,1))*10+1))
     ax = plt.subplot(111)
     landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
     bordersSelection.buffer(bufferBorder)[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
@@ -192,7 +198,7 @@ if __name__ == '__main__':
         #)
         patches = [mpl.patches.Patch(color=color, label=label) for label, color in color_dict.items() ]
         #ax.legend(handles=patches, bbox_to_anchor=(.45, .24), facecolor="white", prop={'size':8})
-        ax.legend(handles=patches, facecolor="white", prop={'size':8}, framealpha=0.5, loc='lower left')
+        ax.legend(handles=patches, facecolor="white", prop={'size':14}, framealpha=0.5, loc='lower left')
 
         landNE_outside = gpd.overlay(landNE, bordersSelection[bordersSelection['LEVL_CODE']==0], how = 'difference')
         landNE_outside.buffer(1.e4).plot(ax=ax, facecolor='0.9', edgecolor='None',zorder=3)
@@ -214,6 +220,7 @@ if __name__ == '__main__':
     geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=bordersSelection.crs)
     #ptsEdgelon =  gpd.overlay(ptsEdge[(ptsEdge['direction']=='W')|(ptsEdge['direction']=='E')], geo, how = 'intersection', keep_geom_type=False)
     ptsEdgelon =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
+    ptsEdgelon = ptsEdgelon[(ptsEdgelon['direction']!='N')&(ptsEdgelon['direction']!='S')]
     
     ax.xaxis.set_ticks(ptsEdgelon.geometry.centroid.x)
     ax.xaxis.set_ticklabels(ptsEdgelon.display, rotation=33)
@@ -224,11 +231,12 @@ if __name__ == '__main__':
     geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=bordersSelection.crs)
     #ptsEdgelat =  gpd.overlay(ptsEdge[(ptsEdge['direction']=='N')|(ptsEdge['direction']=='S')], geo, how = 'intersection', keep_geom_type=False)
     ptsEdgelat =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
+    ptsEdgelat = ptsEdgelat[(ptsEdgelat['direction']!='E')&(ptsEdgelat['direction']!='W')]
 
     ax.yaxis.set_ticks(ptsEdgelat.geometry.centroid.y)
     ax.yaxis.set_ticklabels(ptsEdgelat.display)
 
-    ax.set_title('Fuel Categories Area', pad=30)
+    ax.set_title('Fuel Categories Area', pad=20)
    
-    fig.savefig(dirout+'FuelCatArea_CLC.png',dpi=200)
+    fig.savefig(dirout+'FuelCatArea_CLC.png',dpi=400)
     plt.close(fig)

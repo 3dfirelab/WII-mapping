@@ -1,7 +1,9 @@
 easteurope = [
               ['Ukraine','UKR', None ],
               ['Belarus','BLR', None ],
-              ['Moldova','MDA', None ]
+              ['Moldova','MDA', None ],
+              ['Georgia','GEO', None ],
+
               ]
 
 oceania = [

@@ -5,7 +5,7 @@ import geopandas as gpd
 import shapely 
 import glob
 import matplotlib as mpl
-mpl.use('Agg')
+#mpl.use('Agg')
 from matplotlib import pyplot as plt
 from shapely.geometry import Polygon
 import importlib
@@ -49,7 +49,7 @@ if __name__ == '__main__':
         flag_loopIndus = 'inverse'
     
     if socket.gethostname() == 'moritz': 
-        flag_loopIndus = [-114, 'inverse'] 
+        flag_loopIndus = 'inverse' 
     
     importlib.reload(tools)
     importlib.reload(params)
@@ -123,7 +123,7 @@ if __name__ == '__main__':
 
     if os.path.isfile(dirout+'WII.geojson'):
         print ('load WII ...')
-        WII_tot = gpd.read_file(dirout+'WII.geojson')
+        WII_tot = tools.my_read_file(dirout+'WII.geojson')
 
 
     else:
@@ -214,22 +214,27 @@ if __name__ == '__main__':
                 with open(dirout+'WII.prj','w') as f:
                     f.write(WII_tot.crs.to_wkt())
 
-    if (socket.gethostname() == 'europa') :# | (socket.gethostname() == 'moritz'):
+    if (socket.gethostname() == 'europa')  | (socket.gethostname() == 'moritz'):
     #if True:
     
         mpl.rcdefaults()
-        #mpl.rcParams['legend.fontsize'] = 8
-        mpl.rcParams['xtick.labelsize'] = 8
-        mpl.rcParams['ytick.labelsize'] = 8
-        
+        mpl.rcParams['font.size'] = 14
+        mpl.rcParams['xtick.labelsize'] = 14
+        mpl.rcParams['ytick.labelsize'] = 14
+        mpl.rcParams['figure.subplot.left'] = .1
+        mpl.rcParams['figure.subplot.right'] = .95
+        mpl.rcParams['figure.subplot.top'] = .9
+        mpl.rcParams['figure.subplot.bottom'] = .05
+
         #plot
-        fig = plt.figure(figsize=(10,8))
+        ratio_ = (ymaxAll-yminAll)/(xmaxAll-xminAll)
+        fig = plt.figure(figsize=(10,(np.round(ratio_,1))*10+1))
         ax = plt.subplot(111)
         landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
         graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
         bordersSelection[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
 
-        WII_tot.plot(ax=ax, facecolor='hotpink', edgecolor='hotpink', linewidth=.2,zorder=4)
+        WII_tot.plot(ax=ax, facecolor='hotpink', edgecolor='hotpink', linewidth=.2, zorder=4)
         
         ax.set_xlim(xminAll,xmaxAll)
         ax.set_ylim(yminAll,ymaxAll)
@@ -243,20 +248,22 @@ if __name__ == '__main__':
         lline = shapely.geometry.LineString([[xminAll,ymaxAll],[xmaxAll,ymaxAll]])
         geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=WII_tot.crs)
         ptsEdgelon =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
+        ptsEdgelon = ptsEdgelon[(ptsEdgelon['direction']!='N')&(ptsEdgelon['direction']!='S')]
         
         ax.xaxis.set_ticks(ptsEdgelon.geometry.centroid.x)
-        ax.xaxis.set_ticklabels(ptsEdgelon.display)
+        ax.xaxis.set_ticklabels(ptsEdgelon.display, rotation=33)
         ax.xaxis.tick_top()
         
         lline = shapely.geometry.LineString([[xminAll,yminAll],[xminAll,ymaxAll]])
         geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=WII_tot.crs)
         ptsEdgelat =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
+        ptsEdgelat = ptsEdgelat[(ptsEdgelat['direction']!='E')&(ptsEdgelat['direction']!='W')]
 
         ax.yaxis.set_ticks(ptsEdgelat.geometry.centroid.y)
         ax.yaxis.set_ticklabels(ptsEdgelat.display)
         
-        ax.set_title('Wildand Industrial Interface', pad=30)
-        fig.savefig(dirout+'WII.png',dpi=200)
+        ax.set_title('Wildand Industrial Interface', pad=20)
+        fig.savefig(dirout+'WII.png',dpi=400)
         plt.close(fig)
 
 

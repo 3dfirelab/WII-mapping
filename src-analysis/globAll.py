@@ -6,6 +6,7 @@ import pandas as pd
 import pygeos as pg
 import os 
 import shutil 
+from shapely.validation import make_valid, explain_validity
 
 #homebrewed
 sys.path.append('../src-map/')
@@ -21,7 +22,7 @@ if __name__ == '__main__':
     importlib.reload(tools)
     importlib.reload(params)
 
-    continents = ['africa', 'namerica', 'camerica', 'samerica', 'europe', 'russia', 'oceania', 'asia']
+    continents = ['africa', 'namerica', 'camerica', 'samerica', 'europe', 'russia', 'oceania', 'asia', 'easteurope']
     outdir = '{:s}/Maps-Product/World-Final/'.format(dir_data)
     tools.ensure_dir(outdir)
 
@@ -66,6 +67,14 @@ if __name__ == '__main__':
 
             WII_['area_ha'] = WII_.area * 1.e-4
             WII_['continent'] = continent
+
+            WII_.geometry = WII_.apply(lambda row: make_valid(row.geometry) if not row.geometry.is_valid else row.geometry, axis=1)
+        
+            for index, row in WII_[(WII_.geom_type != 'Polygon') & (WII_.geom_type!='MultiPolygon')].iterrows():
+                with warnings.catch_warnings(record=True) as w:
+                    WII_.at[index,'geometry'] =  WII_[index:index+1].geometry.buffer(1.e-10).unary_union 
+
+
 
             WII_.to_file(indir+'WII-unary_union.geojson', driver='GeoJSON')
             if os.path.isfile(indir+'WII.prj'):

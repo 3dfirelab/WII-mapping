@@ -1,5 +1,6 @@
 #!/bin/bash
 #
+set -x
 export YOUR_MAPBOX_ACCESS_TOKEN=sk.eyJ1Ijoicm9uYW4tcDMzIiwiYSI6ImNsamN3NWEzeDB6Nm0zZXFocHM5c2VxN2QifQ.GCF3TvmWUi-LK5KESrm5qg
 
 #export dirin="/mnt/dataEuropa/WII/Maps-Product/World-Final/"
@@ -38,11 +39,11 @@ JSON_STRING=$( jq -n \
 #from aws to mpabox
 #url is given from above
 #export curl_cmd='-X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache" -d' '"'$JSON_STRING'"'
-export curl_cmd=' -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache" -d '"'$JSON_STRING'"
+export curl_cmd='-X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache" -d '"'$JSON_STRING'"
 echo ''
 echo $curl_cmd
 export curl_url=' "https://api.mapbox.com/uploads/v1/ronan-p33?access_token=sk.eyJ1Ijoicm9uYW4tcDMzIiwiYSI6ImNsamN3NWEzeDB6Nm0zZXFocHM5c2VxN2QifQ.GCF3TvmWUi-LK5KESrm5qg"'
-export cmd='curl ' $curl_cmd $curl_url
+export cmd='curl '$curl_cmd$curl_url
 echo $cmd
 $cmd
 

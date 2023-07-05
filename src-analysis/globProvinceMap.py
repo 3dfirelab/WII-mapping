@@ -6,6 +6,7 @@ import pandas as pd
 import pygeos as pg
 import os 
 import shutil 
+import topojson as tp
 
 #homebrewed
 sys.path.append('../src-map/')
@@ -21,7 +22,7 @@ if __name__ == '__main__':
     importlib.reload(tools)
     importlib.reload(params)
 
-    continents = ['africa', 'namerica', 'camerica', 'samerica', 'russia', 'oceania', 'europe', 'asia']
+    continents = ['africa', 'namerica', 'camerica', 'samerica', 'russia', 'oceania', 'europe', 'asia', 'easteurope']
     outdir = '{:s}/Maps-Product/World-Final/'.format(dir_data)
     tools.ensure_dir(outdir)
 
@@ -50,7 +51,14 @@ if __name__ == '__main__':
         print('')
 
 
+    mapProv['WIIoverIndus'] = mapProv['WIIoverIndus'].apply(lambda x: round(x, 2))
+    mapProv['WIIDensity'] = mapProv['WIIAera_ha']/mapProv['ProvinceSize_ha']
+    
     mapProv.to_file(outdir+'info_province-world.geojson',driver='GeoJSON')
+   
+    topo = tp.Topology(mapProv , prequantize=False)
+    mapProvS = topo.toposimplify(0.1).to_gdf()
+    mapProvS.to_file(outdir+'info_province-world-simplify.geojson',driver='GeoJSON')
 
 
 

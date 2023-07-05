@@ -1,3 +1,4 @@
+import matplotlib as mpl
 import sys
 import os 
 import pandas as pd
@@ -12,6 +13,7 @@ import pyproj
 import matplotlib.colors as colors
 import pyproj
 from fiona.crs import from_epsg
+import numpy as np
 
 #homebrewed
 import tools
@@ -29,7 +31,7 @@ if __name__ == '__main__':
     crs_here = 'epsg:3035'
     
     #borders
-    indir = '/mnt/dataEstrella/WII/Boundaries/'
+    indir = '/mnt/dataEuropa/WII/Boundaries/'
     bordersNUTS = gpd.read_file(indir+'NUTS/NUTS_RG_01M_2021_4326.geojson')
     bordersNUST = bordersNUTS.to_crs('epsg:3035')
     extraNUTS = gpd.read_file(indir+'noNUTS.geojson')
@@ -45,7 +47,7 @@ if __name__ == '__main__':
     graticule = graticule.to_crs(crs_here)
 
 
-    dirout = '/mnt/dataEstrella/WII/Maps-Product/{:s}/'.format(continent)
+    dirout = '/mnt/dataEuropa/WII/Maps-Product/{:s}/'.format(continent)
     
     colorCat=['tab:red', 'tab:orange', 'tab:pink', 'tab:purple' ,'tab:brown', 'tab:cyan' ,'tab:blue']
     color_dict = {'hazard category 1':colorCat[0], 
@@ -59,7 +61,7 @@ if __name__ == '__main__':
     #CLC cat
     print('load clc ...', end='')
     sys.stdout.flush()
-    indir = '/mnt/dataEstrella/WII/FuelCategories-CLC/{:s}/'.format(continent)
+    indir = '/mnt/dataEuropa/WII/FuelCategories-CLC/{:s}/'.format(continent)
     #idxclc = [1]
     #print('  *** warning: only load cat 1 ***' )
     idxclc = range(1,6)
@@ -84,8 +86,19 @@ if __name__ == '__main__':
     fuelCat_all['FH_rank'] = 'hazard category ' + fuelCat_all['IFH'].astype(str)
 
 
+    #plot
+    mpl.rcdefaults()
+    mpl.rcParams['font.size'] = 14
+    mpl.rcParams['xtick.labelsize'] = 14
+    mpl.rcParams['ytick.labelsize'] = 14
+    mpl.rcParams['figure.subplot.left'] = .1
+    mpl.rcParams['figure.subplot.right'] = .95
+    mpl.rcParams['figure.subplot.top'] = .9
+    mpl.rcParams['figure.subplot.bottom'] = .05
 
-    fig = plt.figure(figsize=(10,8))
+    ratio_ = (ymaxAll-yminAll)/(xmaxAll-xminAll)
+    fig = plt.figure(figsize=(10,(np.round(ratio_,1))*10+1))  
+
     ax = plt.subplot(111)
     landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
     graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
@@ -105,19 +118,21 @@ if __name__ == '__main__':
     lline = shapely.geometry.LineString([[xminAll,ymaxAll],[xmaxAll,ymaxAll]])
     geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
     ptsEdgelon =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
+    ptsEdgelon = ptsEdgelon[(ptsEdgelon['direction']!='N')&(ptsEdgelon['direction']!='S')]
     
     ax.xaxis.set_ticks(ptsEdgelon.geometry.centroid.x)
-    ax.xaxis.set_ticklabels(ptsEdgelon.display)
+    ax.xaxis.set_ticklabels(ptsEdgelon.display, rotation=33)
     ax.xaxis.tick_top()
     
     lline = shapely.geometry.LineString([[xminAll,yminAll],[xminAll,ymaxAll]])
     geo = gpd.GeoDataFrame({'geometry': lline}, index=[0], crs=from_epsg(crs_here.split(':')[1]))
     ptsEdgelat =  gpd.overlay(ptsEdge, geo, how = 'intersection', keep_geom_type=False)
+    ptsEdgelat = ptsEdgelat[(ptsEdgelat['direction']!='E')&(ptsEdgelat['direction']!='W')]
 
     ax.yaxis.set_ticks(ptsEdgelat.geometry.centroid.y)
     ax.yaxis.set_ticklabels(ptsEdgelat.display)
 
-    ax.set_title('Fire Hazard Categories Area', pad=30)
+    ax.set_title('Fire Hazard Categories Area', pad=20)
     
-    fig.savefig(dirout+'FireHazardCatArea.png',dpi=200)
+    fig.savefig(dirout+'FireHazardCatArea.png',dpi=400)
     plt.close(fig)
