@@ -19,7 +19,8 @@ if __name__ == '__main__':
     importlib.reload(tools)
     importlib.reload(params)
 
-    continents = ['africa', 'namerica', 'samerica', 'russia', 'asia']
+    continents = ['africa', 'namerica', 'camerica', 'samerica', 'russia', 'asia', 'easteurope', 'europe', 'oceania']
+    #continents = ['asia']
     
     indir = '{:s}/Maps-Product/World-Final/'.format(dir_data)
 
@@ -46,6 +47,8 @@ if __name__ == '__main__':
         for index, row in gdf[(gdf.geom_type != 'Polygon') & (gdf.geom_type!='MultiPolygon')].iterrows():
             with warnings.catch_warnings(record=True) as w:
                 gdf.at[index,'geometry'] =  gdf[index:index+1].geometry.buffer(1.e-10).unary_union 
+
+        gdf = gdf[~gdf['geometry'].is_empty]
 
         gdf.to_file( indir+'./WII-{:s}-valide.geojson'.format(continent) )
         print('')

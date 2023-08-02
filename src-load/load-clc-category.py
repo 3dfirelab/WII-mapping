@@ -15,8 +15,8 @@ if __name__ == '__main__':
     colorveg=['blue','green','orange','black','magenta']
 
     print('fuel clc')
-    indir = '/mnt/dataEstrella/WII/CLC/u2018_clc2018_v2020_20u1_geoPackage/DATA/'
-    outdir = '/mnt/dataEstrella/WII/FuelCategories-CLC/europe/'
+    indir = '/mnt/dataEuropa/WII/CLC/u2018_clc2018_v2020_20u1_geoPackage/DATA/'
+    outdir = '/mnt/dataEuropa/WII/FuelCategories-CLC/europe/'
     fuelCatTag = []
     fuelCatTag.append(['312']) #1
     fuelCatTag.append(['313']) #2

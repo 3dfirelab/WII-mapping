@@ -53,12 +53,19 @@ if __name__ == '__main__':
             print(' run unary_union ...', end='')
             sys.stdout.flush()
             WII_ = tools.my_read_file(indir+'WII.geojson')
+            
+            round = np.vectorize(lambda geom: pg.apply(geom, lambda g: g.round(3)))
+            WII_.geometry = round(WII_.geometry.values.data)
+            
+            WII_.geometry = WII_.apply(lambda row: make_valid(row.geometry) if not row.geometry.is_valid else row.geometry, axis=1)
+        
+            for index, row in WII_[(WII_.geom_type != 'Polygon') & (WII_.geom_type!='MultiPolygon')].iterrows():
+                with warnings.catch_warnings(record=True) as w:
+                    WII_.at[index,'geometry'] =  WII_[index:index+1].geometry.buffer(1.e-10).unary_union 
 
             #keep single overlap
             # define a function that rounds the coordinates of every geometry in the array
-            round = np.vectorize(lambda geom: pg.apply(geom, lambda g: g.round(3)))
-            WII_.geometry = round(WII_.geometry.values.data)
-            tmp_ = WII_.buffer(0.0)
+            tmp_ = round(WII_.geometry.values.data)
             WII_ = gpd.GeoDataFrame(geometry=[tmp_.unary_union], crs=WII_.crs).explode( index_parts=False ).reset_index( drop=True )
             #WII_.geometry = WII_.buffer(-0.01)
        
@@ -68,11 +75,6 @@ if __name__ == '__main__':
             WII_['area_ha'] = WII_.area * 1.e-4
             WII_['continent'] = continent
 
-            WII_.geometry = WII_.apply(lambda row: make_valid(row.geometry) if not row.geometry.is_valid else row.geometry, axis=1)
-        
-            for index, row in WII_[(WII_.geom_type != 'Polygon') & (WII_.geom_type!='MultiPolygon')].iterrows():
-                with warnings.catch_warnings(record=True) as w:
-                    WII_.at[index,'geometry'] =  WII_[index:index+1].geometry.buffer(1.e-10).unary_union 
 
 
 
