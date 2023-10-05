@@ -148,6 +148,9 @@ namerica = [['Canada','CAN',None],
             ['Us','US1', None],
             ]
 
+namerica2 = [['Canada','CAN',None],
+            ]
+
 asia = [
         ['Afghanistan', 'AFG', None ],
         ['Armenia', 'ARM', None ],  

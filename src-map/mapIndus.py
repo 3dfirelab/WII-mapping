@@ -131,7 +131,7 @@ if __name__ == '__main__':
     ax = plt.subplot(111)
     landNE.plot(ax=ax,facecolor='0.9',edgecolor='None',zorder=1)
     graticule.plot(ax=ax, color='lightgrey',linestyle=':',alpha=0.95,zorder=3)
-    bordersSelection.buffer(bufferBorder)[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
+    #bordersSelection.buffer(bufferBorder)[bordersSelection['LEVL_CODE']==0].plot(ax=ax,facecolor='0.75',edgecolor='None',zorder=2)
 
     indusAll.plot(ax=ax, facecolor='k', edgecolor='k', linewidth=.2,zorder=4)
     ax.set_xlim(xminAll,xmaxAll)
@@ -160,6 +160,7 @@ if __name__ == '__main__':
     ax.yaxis.set_ticks(ptsEdgelat.geometry.centroid.y)
     ax.yaxis.set_ticklabels(ptsEdgelat.display)
 
+    #plt.show()
 
     ax.set_title('Industrial Area', pad=20)
     fig.savefig(dirout+'industrialArea_OSM.png',dpi=400)

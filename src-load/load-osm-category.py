@@ -20,7 +20,7 @@ import tools
 
 if __name__ == '__main__':
    
-    continent = 'easteurope'
+    continent = 'namerica'
     dir_data = tools.get_dirData()
 
     '''

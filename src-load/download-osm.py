@@ -18,13 +18,13 @@ import tools
 
 if __name__ == '__main__':
 
-    continent = 'easteurope'
+    continent = 'namerica'
     dir_data = tools.get_dirData()
 
     print('continent = ', continent)
 
     importlib.reload(contries_mod)
-    from countries import europe, asia, namerica, samerica, camerica, africa, russia, oceania, easteurope
+    from countries import europe, asia, namerica, namerica2, samerica, camerica, africa, russia, oceania, easteurope
     
     if continent == 'europe': 
         countries_selection = europe
@@ -32,8 +32,11 @@ if __name__ == '__main__':
     elif continent == 'asia': 
         countries_selection = asia
         continent_url = countries_selection
-    elif continent == 'namerica': 
+    elif continent == 'namerica' : 
         countries_selection = namerica
+        continent_url = 'north-america'
+    elif continent == 'namerica2' : 
+        countries_selection = namerica2
         continent_url = 'north-america'
     elif continent == 'samerica': 
         countries_selection = samerica
@@ -110,7 +113,7 @@ if __name__ == '__main__':
         indir = '{:s}Boundaries//'.format(dir_data)
         borders = gpd.read_file(indir+'NaturalEarth_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
         xminContinent,yminContinent, xmaxContinent,ymaxContinent = [28.7, -14.9, 188, 87.]
-    elif continent == 'namerica':
+    elif 'namerica' in continent:
         indir = '{:s}Boundaries//'.format(dir_data)
         borders = gpd.read_file(indir+'NaturalEarth_10m_admin_0_countries/ne_10m_admin_0_countries.shp')
         xminContinent,yminContinent, xmaxContinent,ymaxContinent = [-180, -13.0, -21, 90.]
@@ -152,7 +155,7 @@ if __name__ == '__main__':
     osmfiles = sorted(glob.glob(indir+'*latest.osm.pbf'))
 
     template_osmosis_main = 'osmosis --read-pbf {:s} --tee {:d} '
-    template_osmosis_bb   = '--bounding-box left={:.4f} right={:.4f} bottom={:.4f} top={:.4f} --write-pbf {:s} ' 
+    template_osmosis_bb   = '--bounding-box left={:.4f} right={:.4f} bottom={:.4f} top={:.4f} --tf accept-ways landuse=industrial --used-node --write-pbf {:s} ' 
 
     for osmfile in osmfiles: 
         country =os.path.basename(osmfile).split('-latest')[0]
@@ -171,7 +174,7 @@ if __name__ == '__main__':
                 else: 
                     borders_ = borders[(borders['LEVL_CODE']==1)&(borders['CNTR_CODE']==country_code)&(borders['NUTS_ID']==country_code2)]
             
-            elif (continent == 'asia') | (continent=='namerica')| (continent=='samerica')| (continent=='camerica')| (continent=='africa')| (continent=='russia') | (continent=='oceania') | (continent=='easteurope'):
+            elif (continent == 'asia') | (continent=='namerica') | (continent=='namerica2')| (continent=='samerica')| (continent=='camerica')| (continent=='africa')| (continent=='russia') | (continent=='oceania') | (continent=='easteurope'):
                 if len(country_code.split(','))>1:
                     country_code_ = country_code.split(',')
                     condition = (borders['SOV_A3']==country_code_[0])
@@ -199,14 +202,14 @@ if __name__ == '__main__':
             ymin_ = max([ymin_,yminContinent])
             ymax_ = min([ymax_,ymaxContinent])
 
-            dd = 3
+            dd = 10
             xx = np.arange(xmin_,xmax_+dd,dd)
             yy = np.arange(ymin_,ymax_+dd,dd)
             
             extent_ll = []
             for x1, x2 in zip(xx[:-1],xx[1:]):
                 for y1, y2 in zip(yy[:-1],yy[1:]):
-                    extent_ll.append( [x1,x2,y1,y2] ) 
+                    extent_ll.append( [x1,x2,y1,min(y2,90)] ) 
 
         nbreTile = len(extent_ll)
         if nbreTile> 1:
@@ -224,7 +227,16 @@ if __name__ == '__main__':
             cmd = template_osmosis_main.format(osmfile,nbreTile) + osmosis_bb
             print('  {:s} split in {:d} ...'.format(country,nbreTile), end='\r')
             process = subprocess.Popen(cmd.strip().split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            process.wait()
+            output, error = process.communicate()
+            #process.wait()
+          
+            error = str(error)
+            if ('SEVERE' in error) | ('aborted' in error):
+                print('*****************')
+                print('osmosis crashes')
+                print('*****************')
+                print(error)
+                pdb.set_trace()
 
             os.remove(osmfile)
             print('  {:s} split in {:d}    '.format(country,nbreTile))
