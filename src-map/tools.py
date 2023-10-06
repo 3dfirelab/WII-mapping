@@ -194,15 +194,18 @@ def buildWII(WII, iv, fuelCat, indus, continent):
             if np.abs(ymax-ymin) < 30.e3: bby = 15.e3 
             else: bby = bb
 
-            lowerCorner = to_latlon.transform(ymin-bbx, xmin-bbx )
-            upperCorner = to_latlon.transform(ymax+bby, xmax+bby )
+            #lowerCorner = to_latlon.transform(ymin-bbx, xmin-bbx )
+            #upperCorner = to_latlon.transform(ymax+bby, xmax+bby )
+            
+            lowerCorner = to_latlon.transform(xmin-bbx, ymin-bbx )
+            upperCorner = to_latlon.transform(xmax+bby, ymax+bby )
 
             fuelCat_ = glc.clipped_fuelCat_gdf(indir, iv, indus_.crs, lowerCorner[1], lowerCorner[0], upperCorner[1], upperCorner[0])
             if fuelCat_ is None:
                 continue
             else: 
                 fuelCat_  =  add_AI2gdf(fuelCat_,ptdx=100,dbox=1000,PoverA=0.05)
-    
+   
         for iai in range(3):
             if iai == 0: 
                 fuelCat__ = fuelCat_[(fuelCat_['AI']>0.9)                      ]

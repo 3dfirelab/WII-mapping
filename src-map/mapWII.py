@@ -40,10 +40,10 @@ if __name__ == '__main__':
         flag_loopIndus = 'inverse'
     
     if socket.gethostname() == 'ubu':     
-        flag_loopIndus = -240
+        flag_loopIndus = -40
     
-    if socket.gethostname() == 'europa': 
-        flag_loopIndus = -200
+    #if socket.gethostname() == 'europa': 
+    #    flag_loopIndus = -200
     
     if socket.gethostname() == 'estrella':     
         flag_loopIndus = 'inverse'
@@ -190,6 +190,7 @@ if __name__ == '__main__':
                 for iv in idxclc:
                     WII = tools.buildWII(WII, iv, fuelCat_all[iv-1], indus, continent)
 
+
                 if WII is not None: 
                     if len(WII)!=0:
                         WII.to_file(WIIFile, driver='GeoJSON')
@@ -199,7 +200,7 @@ if __name__ == '__main__':
 
 
 
-            print ('WII area_ha = ', WII.area.sum()*1.e-4 )
+            print ('WII area_ha = ', WII.area.sum()*1.e-4, '                 ' )
             
             if WII_tot is None: 
                 if WII.shape[0]!=0:
