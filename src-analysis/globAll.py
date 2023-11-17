@@ -7,6 +7,7 @@ import pygeos as pg
 import os 
 import shutil 
 from shapely.validation import make_valid, explain_validity
+import warnings
 
 #homebrewed
 sys.path.append('../src-map/')
@@ -17,12 +18,17 @@ import params
 if __name__ == '__main__':
 #################
 
+    if os.environ['CONDA_DEFAULT_ENV'] != 'geo':
+        print('load conda env geo')
+        sys.exit()
+
     dir_data = tools.get_dirData()
 
     importlib.reload(tools)
     importlib.reload(params)
 
-    continents = ['africa', 'namerica', 'camerica', 'samerica', 'europe', 'russia', 'oceania', 'asia', 'easteurope']
+    #continents = ['africa', 'namerica', 'camerica', 'samerica', 'europe', 'russia', 'oceania', 'asia', 'easteurope']
+    continents = [ 'namerica']
     outdir = '{:s}/Maps-Product/World-Final/'.format(dir_data)
     tools.ensure_dir(outdir)
 
@@ -60,13 +66,14 @@ if __name__ == '__main__':
             WII_.geometry = WII_.apply(lambda row: make_valid(row.geometry) if not row.geometry.is_valid else row.geometry, axis=1)
         
             for index, row in WII_[(WII_.geom_type != 'Polygon') & (WII_.geom_type!='MultiPolygon')].iterrows():
-                with warnings.catch_warnings(record=True) as w:
-                    WII_.at[index,'geometry'] =  WII_[index:index+1].geometry.buffer(1.e-10).unary_union 
-
+                #with warnings.catch_warnings(record=True) as w:
+                WII_.at[index,'geometry'] =  WII_[index:index+1].geometry.buffer(1.e-6).unary_union 
+                
             #keep single overlap
             # define a function that rounds the coordinates of every geometry in the array
-            tmp_ = round(WII_.geometry.values.data)
-            WII_ = gpd.GeoDataFrame(geometry=[tmp_.unary_union], crs=WII_.crs).explode( index_parts=False ).reset_index( drop=True )
+            ##MERDEtmp_ = round(WII_.geometry.values.data)
+            WII_['geometry'] = shapely.set_precision(WII_.geometry.values, 1e-2)
+            WII_ = gpd.GeoDataFrame(geometry=[WII_.unary_union], crs=WII_.crs).explode( index_parts=False ).reset_index( drop=True )
             #WII_.geometry = WII_.buffer(-0.01)
        
             #to force remove indus from WII

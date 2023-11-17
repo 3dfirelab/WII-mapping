@@ -49,7 +49,7 @@ if __name__ == '__main__':
         flag_loopIndus = 'inverse'
     
     if socket.gethostname() == 'moritz': 
-        flag_loopIndus = 'inverse' 
+        flag_loopIndus = [-60 , 'inverse']
     
     importlib.reload(tools)
     importlib.reload(params)
@@ -209,7 +209,7 @@ if __name__ == '__main__':
                 if WII.shape[0]!=0:
                     WII_tot = pd.concat([WII_tot, WII])
 
-        if (socket.gethostname() == 'europa') :#| (socket.gethostname() == 'moritz'):
+        if (socket.gethostname() == 'europa') | (socket.gethostname() == 'moritz'):
             WII_tot.to_file(dirout+'WII.geojson',driver='GeoJSON')
             if WII_tot.crs.to_epsg() is None:
                 with open(dirout+'WII.prj','w') as f:
