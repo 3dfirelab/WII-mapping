@@ -20,7 +20,8 @@ if __name__ == '__main__':
     importlib.reload(params)
 
     #continents = ['africa', 'namerica', 'camerica', 'samerica', 'russia', 'asia', 'easteurope', 'europe', 'oceania']
-    continents = ['europe','namerica']
+    #continents = ['asia']
+    continents = ['namerica', 'europe']
     
     indir = '{:s}/Maps-Product/World-Final/'.format(dir_data)
 
