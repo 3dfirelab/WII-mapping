@@ -18,7 +18,12 @@ import tools
 
 if __name__ == '__main__':
 
-    continent = 'namerica'
+    continent = 'europe'
+    dd = 5 # degree use to split osm file
+    
+    #continent = 'namerica'
+    #dd = 10
+
     dir_data = tools.get_dirData()
 
     print('continent = ', continent)
@@ -28,10 +33,10 @@ if __name__ == '__main__':
     
     if continent == 'europe': 
         countries_selection = europe
-        continent_url = countries_selection
+        continent_url = 'europe'
     elif continent == 'asia': 
         countries_selection = asia
-        continent_url = countries_selection
+        continent_url = 'asia'
     elif continent == 'namerica' : 
         countries_selection = namerica
         continent_url = 'north-america'
@@ -202,7 +207,6 @@ if __name__ == '__main__':
             ymin_ = max([ymin_,yminContinent])
             ymax_ = min([ymax_,ymaxContinent])
 
-            dd = 10
             xx = np.arange(xmin_,xmax_+dd,dd)
             yy = np.arange(ymin_,ymax_+dd,dd)
             

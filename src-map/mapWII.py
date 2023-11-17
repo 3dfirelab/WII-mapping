@@ -43,7 +43,7 @@ if __name__ == '__main__':
         flag_loopIndus = -40
     
     #if socket.gethostname() == 'europa': 
-    #    flag_loopIndus = -200
+    #    flag_loopIndus = [-70, 'inverse',]
     
     if socket.gethostname() == 'estrella':     
         flag_loopIndus = 'inverse'
